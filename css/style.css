@@ -1,0 +1,26 @@
+/* 把我们所有标签的内外边距清零 */
+* {
+    margin: 0;
+    padding: 0;
+    /* css3盒子模型 */
+    box-sizing: border-box;
+    /* background-color: #00cd65; */
+    background: #8499ff;
+    font-family: Avenir-Roman, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Roboto, Arial, PingFang SC, Hiragino Sans GB, Microsoft Yahei, Microsoft Jhenghei, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+    font-size: 16px;
+    /* cursor: url('../images/pointer.svg')" auto; */
+    cursor: -webkit-image-set(url('../images/pointer3x.svg') 5x), auto;
+}
+
+.bg {
+    width: 100%;
+    height: 100%;
+    background-image: url(../images/haodmanlogo.svg);
+}
+
+.homepage p {
+    margin: 40px 40px;
+    width: 40%;
+    font-size: 20px;
+    background-color: rgba(0, 0, 0, 0);
+}
