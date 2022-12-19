@@ -5,22 +5,392 @@
     /* css3盒子模型 */
     box-sizing: border-box;
     /* background-color: #00cd65; */
-    background: #8499ff;
+    /* background: #8499ff; */
+    text-decoration: none;
+    list-style: none;
     font-family: Avenir-Roman, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Roboto, Arial, PingFang SC, Hiragino Sans GB, Microsoft Yahei, Microsoft Jhenghei, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-    font-size: 16px;
+    font-size: 14px;
     /* cursor: url('../images/pointer.svg')" auto; */
     cursor: -webkit-image-set(url('../images/pointer3x.svg') 5x), auto;
 }
 
-.bg {
-    width: 100%;
-    height: 100%;
-    background-image: url(../images/haodmanlogo.svg);
+:root {
+    --main-width: 62.5%;
 }
 
-.homepage p {
-    margin: 40px 40px;
-    width: 40%;
-    font-size: 20px;
-    background-color: rgba(0, 0, 0, 0);
+:root {
+    --main-lwidth: 80%;
+}
+
+:root {
+    --mian-swidth: 90%;
+}
+
+/* 这里为页面建立Grid，4x4 */
+.container {
+    display: grid;
+    width: var(--main-width);
+    height: 100vh;
+    margin: 0 auto;
+    grid-template-columns: .25fr .25fr .25fr .25fr;
+    grid-template-rows: 96px 1fr 240px;
+    /* 对Grid进行区分 */
+    grid-template-areas:
+        "logo nav nav nav"
+        "main main main main"
+        "footer footer footer footer";
+    grid-gap: 0.2rem;
+}
+
+/* PC端固定Logo和导航栏 */
+.nav-blur {
+    z-index: 1;
+    position: fixed;
+    width: 100vw;
+    height: 96px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(50px);
+    -webkit-backdrop-filter: blur(50px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+    ;
+    /* Note: backdrop-filter has minimal browser support */
+}
+
+
+
+/* 固定导航栏 写完不动了！ */
+header {
+    z-index: 1;
+    position: fixed;
+    width: var(--main-width);
+    height: 96px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* background-color: pink; */
+}
+
+/* 这里是主页logo，点击可以跳转到首页 */
+.logo {
+
+    height: 48px;
+    /* background-color: aqua; */
+    grid-area: logo;
+}
+
+/* logo大小调整 */
+.logo img {
+    width: 78px;
+}
+
+/* 导航栏 进行页面跳转 */
+.nav-bar {
+    /* margin: 0 auto; */
+    margin-left: .2rem;
+    width: 620px;
+    /* background-color: aquamarine; */
+    grid-area: nav;
+}
+
+/* 对导航栏进行样式的调整，让他们在顶部右侧对齐 */
+.nav-bar ul {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    height: 48px;
+    padding: 2px;
+    background: rgba(0, 0, 0, 0.05);
+    /* border: 1px solid rgba(255, 255, 255, 0.1); */
+    backdrop-filter: blur(50px);
+    -webkit-backdrop-filter: blur(50px);
+    /* Note: backdrop-filter has minimal browser support */
+    border-radius: 24px;
+}
+
+/* 每个按钮的样式 */
+.nav-bar ul li {
+    width: 20%;
+    height: 44px;
+    /* background: #FFFFFF; */
+    border-radius: 24px;
+    text-align: center;
+    line-height: 44px;
+}
+
+/* 按钮文字剧中 */
+.nav-bar ul li a {
+    font-weight: 400;
+    display: flex;
+    justify-content: center;
+    color: black;
+    /* margin-right: 8px; */
+    margin-right: 0;
+    /* background-color: aquamarine; */
+}
+
+/* 按钮icon距离右侧6像素 */
+.nav-bar ul li a img {
+    margin-right: 6px;
+}
+
+/* 当前导航栏所在页面高亮显示 */
+.nav-bar .links li a:hover,
+.nav-bar .links li a.active {
+    font-weight: 400;
+    display: flex;
+    justify-content: center;
+    color: black;
+    background: #ffffff;
+    margin-right: 0;
+    border-radius: 22px;
+}
+
+
+/* -------------------------- */
+main {
+    /* background-color: rgb(127, 255, 148); */
+    grid-area: main;
+}
+
+/* 这里图片墙区域 */
+.wall-image-container {
+    /* padding: 10px; */
+    /* max-width: 500px; */
+    margin: 0 auto;
+    display: grid;
+    grid-gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    /* grid-template-columns: auto; */
+    grid-auto-rows: 190px;
+    grid-auto-flow: dense;
+}
+
+/* 占2个纵向单元格 */
+.h-stretch {
+    grid-row: span 2;
+}
+
+/* 占3个纵向单元格 */
+.hmax-stretch {
+    grid-row: span 3;
+}
+
+/* 占2个横向单元格 */
+.w-stretch {
+    grid-column: span 2;
+}
+
+/* 占3个横向单元格 */
+.wmax-stretch {
+    grid-column: span 3;
+}
+
+/* 占2*2的格子 */
+.big-stretch {
+    grid-row: span 2;
+    grid-column: span 2;
+}
+
+/* 增加放大动画 */
+.wall-image-container div {
+    overflow: hidden;
+    border-radius: 12px;
+    /* 圆角消失解决方法 */
+    -webkit-transform: rotate(0deg);
+}
+
+/* 图片大小 */
+.wall-image-container div img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all .3s;
+}
+
+/* 图片放大动画 */
+.wall-image-container div img:hover {
+    transform: scale(1.1);
+}
+
+/* 图片点击全屏 */
+.wall .popup-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(100px);
+    /* Note: backdrop-filter has minimal browser support */
+    height: 100%;
+    width: 100%;
+    z-index: 100;
+    display: none;
+}
+
+/* 关闭大图效果 */
+.wall .popup-image span {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    font-size: 40px;
+    font-weight: bolder;
+    color: black;
+    /* cursor: pointer; */
+}
+
+/* 大图效果 */
+.wall .popup-image img {
+    position: absolute;
+    height: 80%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* border: 5px solid #ffffff; */
+}
+
+/* 点开的图片在移动端的显示大小 */
+@media (max-width:550px) {
+    .wall .popup-image img {
+        width: 95%;
+        height: auto;
+    }
+}
+
+
+/* -------------------------- */
+footer {
+    background-color: rgb(13, 255, 0);
+    grid-area: footer;
+}
+
+
+
+
+
+
+
+
+
+/* 禁止图片右键选中 */
+/* .haodman-logo {
+    pointer-events: none;
+    width: 78px;
+    height: 48px;
+} */
+
+/* ipad端适配 */
+@media only screen and (max-width: 950px) {
+
+    /* 显示内容的框架宽度 */
+    .container {
+        width: var(--mian-swidth);
+    }
+
+    /* 固定导航栏 写完不动了！ */
+    header {
+        z-index: 1;
+        position: fixed;
+        width: var(--mian-swidth);
+    }
+}
+
+/* 移动端适配 */
+@media only screen and (max-width: 550px) {
+
+    /* 显示内容的框架宽度 */
+    .container {
+        width: var(--main-lwidth);
+    }
+
+
+    /* 所有展示内容的大小 */
+    .container {
+        width: auto;
+        height: 100vh;
+        margin-left: 16px;
+        margin-right: 16px;
+        grid-template-columns: 1fr;
+        grid-template-rows: 48px auto 0px 120px;
+        grid-template-areas:
+            "header"
+            "main"
+            "nav"
+            "footer";
+    }
+
+
+    /* PC端固定Logo和导航栏 */
+    .nav-blur {
+        z-index: 1;
+        position: fixed;
+        width: 100vw;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(50px);
+        -webkit-backdrop-filter: blur(50px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+        ;
+        /* Note: backdrop-filter has minimal browser support */
+    }
+
+
+
+
+    /* 固定导航栏及logo */
+    /* 固定导航栏 写完不动了！ */
+    header {
+        height: 48px;
+        margin: 16px 0;
+    }
+
+    /* logo大小调整 */
+    .logo img {
+        width: 78px;
+    }
+
+    /* 移动端页面固定导航栏 */
+    /* 底部导航栏 */
+    .nav-bar {
+        position: fixed;
+        bottom: 16px;
+        height: 48px;
+        margin: 0 auto;
+        width: calc(100% - 32px);
+        /* align-items: center; */
+        /* justify-items: center; */
+
+
+    }
+
+    .container .nav-bar .links {
+        /* width: 70%; */
+    }
+
+    .container .nav-bar .links span {
+        display: none;
+    }
+
+    .container .nav-bar .links li a {
+        height: 44px;
+    }
+
+    .container .nav-bar .links li img {
+        width: 20px;
+        margin: 0 auto;
+    }
+
+    .container .nav-bar .links li {
+        width: 20%;
+    }
+
+
+
+    /* 这里图片墙区域 */
+    .wall-image-container {
+        grid-template-columns: auto auto;
+        margin: 48px auto;
+    }
+
 }

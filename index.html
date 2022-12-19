@@ -5,24 +5,48 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hi, this is Haodman.</title>
-    <!-- 引入css初始化样式文件 -->
+    <title>Document</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="icon" href="images/favicon.svg">
 </head>
 
-<body>
-    <div class="bg">
-    </div>
-    <div class="homepage">
-        <p>Hello, I'm Haodman, welcome to my homepage, where I record my daily practice works and design
-            projects, I'm glad you can see it. 😄</p>
-    </div>
+<body id="index">
+    <div class="nav-blur"></div>
+    <div class="container">
+        <!-- 这里是顶栏模糊 -->
+        <header>
+            <!-- 这里是logo -->
+            <div class="logo">
+                <a href="" index.html"" class="haodman-logo"><img src="images//haodmanlogo.svg" alt=""></a>
+            </div>
+            <!-- 这里是导航栏 -->
+            <nav class="nav-bar">
+                <ul class="links">
+                    <li><a data-active="index" href="index.html"><img src="images/nav/normal/intro.svg" alt="">
+                            <span>Intro</span></a></li>
+                    <li><a data-active="wall" href="wall.html"><img src="images/nav/normal/Wall.svg" alt="">
+                            <span>Wall</span></a></li>
+                    <li><a data-active="project" href="project.html"><img src="images/nav/normal/Project.svg" alt="">
+                            <span>Project</span></a></li>
+                    <li><a data-active="doing" href="doing.html"><img src="images/nav/normal/Doing.svg" alt="">
+                            <span>Doing</span></a></li>
+                    <li><a data-active="about" href="about.html"><img src="images/nav/normal/About.svg" alt="">
+                            <span>About</span></a></li>
+                </ul>
+            </nav>
+        </header>
+        <!-- 这里是主要内容的区域 -->
+        <main class="wall">
+            <div class="wall-image-container">
+                我的主页
+            </div>
+        </main>
+        <!-- 这里是底部 -->
+        <footer>
+            <div class="footer-"></div>
 
-    <nav>
-        <ul class="turnings">
-        </ul>
-    </nav>
+        </footer>
+    </div>
+    <script src="js/script.js"></script>
 
 </body>
 
