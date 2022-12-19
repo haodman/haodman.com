@@ -14,6 +14,9 @@
     cursor: -webkit-image-set(url('../images/pointer3x.svg') 5x), auto;
 }
 
+
+
+
 :root {
     --main-width: 62.5%;
     --main-lwidth: 80%;
@@ -124,9 +127,20 @@ header {
 }
 
 /* 按钮icon距离右侧6像素 */
-.nav-bar ul li a img {
+/* .nav-bar ul li a img {
     margin-right: 6px;
+} */
+
+
+.nav-bar ul li a .page-ico {
+    font-size: 20px;
+    margin-right: 6px;
+    text-align: center;
+    width: 20px;
+    height: 20px;
 }
+
+
 
 /* 当前导航栏所在页面高亮显示 */
 .nav-bar .links li a:hover,
@@ -212,7 +226,7 @@ main {
     position: fixed;
     top: 0;
     left: 0;
-    background: rgba(255, 255, 255, 0.99);
+    background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(200px);
     -webkit-backdrop-filter: blur(200px);
     /* Note: backdrop-filter has minimal browser support */
@@ -346,19 +360,26 @@ footer {
         height: 44px;
     }
 
-    .container .nav-bar .links li img {
+    /* .container .nav-bar .links li img {
         width: 20px;
         margin: 0 auto;
+    } */
+
+    .nav-bar ul li a .page-ico {
+        width: 20px;
+        margin: 0 auto;
+        font-size: 20px;
+        text-align: center;
+        height: 20px;
     }
 
     .container .nav-bar .links li {
         width: 20%;
     }
 
-    .container .nav-bar .links span {
+    .container .nav-bar .links span:nth-child(2) {
         display: none;
     }
-
 
 
 
