@@ -16,13 +16,7 @@
 
 :root {
     --main-width: 62.5%;
-}
-
-:root {
     --main-lwidth: 80%;
-}
-
-:root {
     --mian-swidth: 90%;
 }
 
@@ -218,8 +212,9 @@ main {
     position: fixed;
     top: 0;
     left: 0;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(100px);
+    background: rgba(255, 255, 255, 0.99);
+    backdrop-filter: blur(200px);
+    -webkit-backdrop-filter: blur(200px);
     /* Note: backdrop-filter has minimal browser support */
     height: 100%;
     width: 100%;
@@ -229,6 +224,7 @@ main {
 
 /* 关闭大图效果 */
 .wall .popup-image span {
+    z-index: 100;
     position: absolute;
     width: 100%;
     height: 100%;
@@ -237,26 +233,33 @@ main {
     font-size: 40px;
     font-weight: bolder;
     color: black;
-    /* cursor: pointer; */
+    cursor: pointer;
 }
 
 /* 大图效果 */
 .wall .popup-image img {
     position: absolute;
     height: 80%;
+    max-width: 90%;
+    object-fit: contain;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    /* border: 5px solid #ffffff; */
+    /* border: 40px solid #ffffff; */
+    border-radius: 12px;
 }
 
 /* 点开的图片在移动端的显示大小 */
 @media (max-width:550px) {
     .wall .popup-image img {
-        width: 95%;
+        height: 70%;
+        max-width: 90%;
+        object-fit: contain;
         height: auto;
     }
 }
+
+
 
 
 /* -------------------------- */
@@ -271,14 +274,12 @@ footer {
 
 
 
-
-
 /* 禁止图片右键选中 */
-/* .haodman-logo {
+.haodman-logo {
     pointer-events: none;
     width: 78px;
     height: 48px;
-} */
+}
 
 /* ipad端适配 */
 @media only screen and (max-width: 950px) {
@@ -296,16 +297,8 @@ footer {
     }
 }
 
-/* 移动端适配 */
+
 @media only screen and (max-width: 550px) {
-
-    /* 显示内容的框架宽度 */
-    .container {
-        width: var(--main-lwidth);
-    }
-
-
-    /* 所有展示内容的大小 */
     .container {
         width: auto;
         height: 100vh;
@@ -324,19 +317,9 @@ footer {
     /* PC端固定Logo和导航栏 */
     .nav-blur {
         z-index: 1;
-        position: fixed;
         width: 100vw;
         height: 80px;
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(50px);
-        -webkit-backdrop-filter: blur(50px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.8);
-        ;
-        /* Note: backdrop-filter has minimal browser support */
     }
-
-
-
 
     /* 固定导航栏及logo */
     /* 固定导航栏 写完不动了！ */
@@ -351,25 +334,12 @@ footer {
     }
 
     /* 移动端页面固定导航栏 */
-    /* 底部导航栏 */
     .nav-bar {
         position: fixed;
         bottom: 16px;
         height: 48px;
         margin: 0 auto;
         width: calc(100% - 32px);
-        /* align-items: center; */
-        /* justify-items: center; */
-
-
-    }
-
-    .container .nav-bar .links {
-        /* width: 70%; */
-    }
-
-    .container .nav-bar .links span {
-        display: none;
     }
 
     .container .nav-bar .links li a {
@@ -385,6 +355,11 @@ footer {
         width: 20%;
     }
 
+    .container .nav-bar .links span {
+        display: none;
+    }
+
+
 
 
     /* 这里图片墙区域 */
@@ -392,5 +367,8 @@ footer {
         grid-template-columns: auto auto;
         margin: 48px auto;
     }
+
+
+
 
 }
