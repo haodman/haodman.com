@@ -1,0 +1,25 @@
+/* 首页自我介绍部分 */
+.intro {
+    margin: auto 0;
+}
+
+.intro .intro-content h1 {
+    margin: 60px 0;
+    font-size: 60px;
+}
+
+/* 一张随时更换的抽象画 */
+.intro .intro-content .intro-art img {
+    /* position: relative; */
+    width: 360px;
+    height: 480px;
+    object-fit: cover;
+    border-radius: 24px;
+    margin-bottom: 60px;
+    transition: all .3s;
+}
+
+/* 图片放大动画 */
+.intro .intro-content .intro-art img:hover {
+    transform: scale(1.1);
+}
