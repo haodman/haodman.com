@@ -1,0 +1,70 @@
+/* 这里是每日更新内容 */
+
+/* 距离顶部导航栏12像素 */
+.doing .doing-container {
+    margin-top: 12px;
+}
+
+/* 定义内容宽度按照网格的100% */
+.doing .doing-container img {
+    width: 100%;
+    border-radius: 12px;
+}
+
+/* 内容信息的排布 */
+.doing .doing-container .doing-info {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+}
+
+
+/* 对左侧emoji和标题信息进行排版 */
+.doing .doing-container .doing-info .doing-left {
+    display: flex;
+    align-items: center;
+}
+
+.doing .doing-container .doing-info .emoji {
+    font-size: 44px;
+    margin-right: 12px;
+}
+
+.doing .doing-container .doing-info .doing-title h3 {
+    font-size: 16px;
+}
+
+.doing .doing-container .doing-info .doing-title p {
+    font-size: 14px;
+}
+
+
+
+/* 右侧时间排版 */
+.doing .doing-container .doing-info .doing-date {
+    width: 108px;
+    height: 24px;
+    font-size: 12px;
+    text-align: center;
+    margin-right: 0;
+    background-color: rgba(0, 0, 0, .095);
+    line-height: 24px;
+    border-radius: 12px;
+}
+
+.doing .doing-container .doing-info .doing-date p {
+    font-size: 12px;
+}
+
+
+
+
+/* 移动端适配 */
+@media only screen and (max-width: 550px) {
+
+    /* 距离顶部导航栏12像素 */
+    .doing .doing-container {
+        margin-top: 48px;
+    }
+}

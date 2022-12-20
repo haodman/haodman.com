@@ -7,12 +7,18 @@
     /* background: #8499ff; */
     text-decoration: none;
     list-style: none;
-    font-family: Avenir-Roman, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Roboto, Arial, PingFang SC, Hiragino Sans GB, Microsoft Yahei, Microsoft Jhenghei, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+    font-family: Avenir-Roman, Avenir-Heavy, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Roboto, Arial, PingFang SC, Hiragino Sans GB, Microsoft Yahei, Microsoft Jhenghei, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
     font-size: 14px;
     /* cursor: url('../images/pointer.svg')" auto; */
     cursor: -webkit-image-set(url('../images/pointer.svg') 5x), auto;
+
 }
 
+/* 文字选中变色 */
+::selection {
+    color: black;
+    background: #FF87DF;
+}
 
 
 
@@ -361,7 +367,7 @@ footer {
         margin-left: 16px;
         margin-right: 16px;
         grid-template-columns: 1fr;
-        grid-template-rows: 48px auto 0px 160px;
+        grid-template-rows: 48px auto 0px 200px;
         grid-template-areas:
             "header"
             "main"
@@ -460,3 +466,4 @@ footer {
     .footer .footer-listen p {
         font-size: 12px;
     }
+}

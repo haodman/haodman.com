@@ -1,0 +1,18 @@
+.project {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.project .project-content {
+    text-align: center;
+}
+
+.project span {
+    text-align: center;
+    font-size: 72px;
+}
+
+.project h2 {
+    font-size: 24px;
+}

@@ -1,0 +1,18 @@
+.about {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.about .project-content {
+    text-align: center;
+}
+
+.about span {
+    text-align: center;
+    font-size: 72px;
+}
+
+.about h2 {
+    font-size: 24px;
+}
