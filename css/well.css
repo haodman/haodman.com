@@ -1,0 +1,20 @@
+/* 增加放大动画 */
+.wall-image-container div {
+    overflow: hidden;
+    border-radius: 12px;
+    /* 圆角消失解决方法 */
+    -webkit-transform: rotate(0deg);
+}
+
+/* 图片大小 */
+.wall-image-container div video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all .3s;
+}
+
+/* 图片放大动画 */
+/* .wall-image-container div video:hover {
+    transform: scale(1.1);
+} */
