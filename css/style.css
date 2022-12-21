@@ -265,13 +265,13 @@ main {
 .wall .popup-image img {
     position: absolute;
     height: 80%;
-    max-width: 90%;
+    max-width: 60%;
     object-fit: contain;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     /* border: 40px solid #ffffff; */
-    border-radius: 12px;
+    /* border-radius: 12px; */
 }
 
 /* 点开的图片在移动端的显示大小 */
