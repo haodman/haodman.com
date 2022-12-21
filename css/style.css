@@ -313,7 +313,8 @@ footer {
 
 .footer .footer-listen p {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 400;
+    margin-right: 20px;
 }
 
 .footer .page-ico {
