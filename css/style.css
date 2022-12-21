@@ -11,7 +11,6 @@
     font-size: 14px;
     /* cursor: url('../images/pointer.svg')" auto; */
     cursor: -webkit-image-set(url('../images/pointer.svg') 5x), auto;
-
 }
 
 /* 文字选中变色 */
@@ -26,6 +25,7 @@
     --main-width: 62.5%;
     --main-lwidth: 80%;
     --mian-swidth: 90%;
+    --background-color: #f1f1f1
 }
 
 /* 这里为页面建立Grid，4x4 */
@@ -182,27 +182,32 @@ main {
 /* 占2个纵向单元格 */
 .h-stretch {
     grid-row: span 2;
+    background-color: var(--background-color);
 }
 
 /* 占3个纵向单元格 */
 .hmax-stretch {
     grid-row: span 3;
+    background-color: var(--background-color);
 }
 
 /* 占2个横向单元格 */
 .w-stretch {
     grid-column: span 2;
+    background-color: var(--background-color);
 }
 
 /* 占3个横向单元格 */
 .wmax-stretch {
     grid-column: span 3;
+    background-color: var(--background-color);
 }
 
 /* 占2*2的格子 */
 .big-stretch {
     grid-row: span 2;
     grid-column: span 2;
+    background-color: var(--background-color);
 }
 
 /* 增加放大动画 */
@@ -211,6 +216,7 @@ main {
     border-radius: 12px;
     /* 圆角消失解决方法 */
     -webkit-transform: rotate(0deg);
+    background-color: var(--background-color);
 }
 
 /* 图片大小 */
