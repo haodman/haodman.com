@@ -282,16 +282,17 @@
             <div class="footer">
                 <div class="footer-listen">
                     <span class="page-ico">🌁</span>
-                    <p>This will show you the music I'm listening to.</p>
+                    <!-- <p>This will show you the music I'm listening to.</p> -->
+                    <p id="box"></p>
+                    <!-- <div id="box"></div> -->
+
                 </div>
                 <ul class="footer-ico">
                     <li><a href="https://dribbble.com/HAODMAN" target="_blank"><span class="page-ico">🍑</span></a></li>
                     <li><a href="https://twitter.com/haodman" target="_blank"><span class="page-ico">🍆</span></a></li>
                     <li><a href="https://www.instagram.com/haodman/" target="_blank"><span
-                                class="page-ico">🌂</span></a>
-                    </li>
+                                class="page-ico">🌂</span></a></li>
                     <li><a href="https://www.behance.net/haodman" target="_blank"><span class="page-ico">🌼</span></a>
-                    </li>
                     <li><a href="mailto:haodman@gmail.com" target="_blank"><span class="page-ico">📧</span></a>
                     </li>
                 </ul>
@@ -301,6 +302,20 @@
 
     </div>
     <script src="js/script.js"></script>
+    <!-- 网站访问次数 -->
+    <script type="text/javascript">
+        function setStorage() {
+            if (localStorage.counter) {
+                localStorage.counter = Number(localStorage.counter) + 1;
+            } else {
+                localStorage.counter = 1;
+            }
+            return localStorage.counter;
+        }
+        var counter = setStorage();
+        var oBox = document.getElementById('box');
+        oBox.innerHTML = "The number of times this page was visited was " + counter + " times";            
+    </script>
 
 </body>
 
