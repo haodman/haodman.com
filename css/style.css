@@ -7,7 +7,7 @@
     /* background: #8499ff; */
     text-decoration: none;
     list-style: none;
-    font-family: Avenir-Roman, Avenir-Heavy, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Roboto, Arial, PingFang SC, Hiragino Sans GB, Microsoft Yahei, Microsoft Jhenghei, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+    font-family: Avenir, Avenir Heavy, Avenir-Heavy, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Roboto, Arial, PingFang SC, Hiragino Sans GB, Microsoft Yahei, Microsoft Jhenghei, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
     font-size: 14px;
     /* cursor: url('../images/pointer.svg')" auto; */
     cursor: -webkit-image-set(url('../images/pointer.svg') 5x), auto;
@@ -21,12 +21,6 @@
 
 
 
-:root {
-    --main-width: 62.5%;
-    --main-lwidth: 80%;
-    --mian-swidth: 90%;
-    --background-color: #f1f1f1
-}
 
 /* 这里为页面建立Grid，4x4 */
 .container {
@@ -350,6 +344,68 @@ footer {
     height: 48px;
 } */
 
+
+
+:root {
+    --main-width: 50%;
+    --main-mwidth: 62.5%;
+    --main-lwidth: 80%;
+    --mian-swidth: 90%;
+    --background-color: #f1f1f1
+}
+
+@media only screen and (max-width: 1920px) {
+
+    /* 显示内容的框架宽度 */
+    .container {
+        width: var(--main-mwidth);
+    }
+
+    /* 固定导航栏 写完不动了！ */
+    header {
+        z-index: 1;
+        position: fixed;
+        width: var(--main-mwidth);
+    }
+}
+
+
+/* 1280窗口化适配 */
+@media only screen and (max-width: 1820px) {
+
+    /* 显示内容的框架宽度 */
+    .container {
+        width: var(--main-lwidth);
+    }
+
+    /* 固定导航栏 写完不动了！ */
+    header {
+        z-index: 1;
+        position: fixed;
+        width: var(--main-lwidth);
+    }
+}
+
+@media only screen and (max-width: 1280px) {
+
+    /* 显示内容的框架宽度 */
+    .container {
+        width: var(--main-lwidth);
+    }
+
+    /* 固定导航栏 写完不动了！ */
+    header {
+        z-index: 1;
+        position: fixed;
+        width: var(--main-lwidth);
+    }
+}
+
+
+
+
+
+
 /* ipad端适配 */
 @media only screen and (max-width: 950px) {
 
@@ -407,8 +463,8 @@ footer {
         position: fixed;
         bottom: 16px;
         height: 48px;
-        margin: 0 auto;
-        width: calc(100% - 32px);
+        margin: 0 19px 0 19px;
+        width: calc(100% - 70px);
     }
 
     .container .nav-bar .links li a {

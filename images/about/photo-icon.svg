@@ -1,0 +1,27 @@
+<svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="44" height="44" rx="12" fill="white"/>
+<g style="mix-blend-mode:darken">
+<rect x="29.9502" y="7.32275" width="9.51351" height="14.2703" rx="4.75676" transform="rotate(45 29.9502 7.32275)" fill="#FFE935"/>
+</g>
+<g style="mix-blend-mode:darken">
+<rect x="38" y="17.2432" width="9.51351" height="14.2703" rx="4.75676" transform="rotate(90 38 17.2432)" fill="#A6DA3B"/>
+</g>
+<g style="mix-blend-mode:darken">
+<rect x="36.6768" y="29.9502" width="9.51351" height="14.2703" rx="4.75676" transform="rotate(135 36.6768 29.9502)" fill="#6BC0A3"/>
+</g>
+<g style="mix-blend-mode:darken">
+<rect x="26.7568" y="38" width="9.51351" height="14.2703" rx="4.75676" transform="rotate(180 26.7568 38)" fill="#55B6FF"/>
+</g>
+<g style="mix-blend-mode:darken">
+<rect x="26.7568" y="20.2703" width="9.51351" height="14.2703" rx="4.75676" transform="rotate(180 26.7568 20.2703)" fill="#FFAB63"/>
+</g>
+<g style="mix-blend-mode:darken">
+<rect x="14.0498" y="36.6772" width="9.51351" height="14.2703" rx="4.75676" transform="rotate(-135 14.0498 36.6772)" fill="#B171EC"/>
+</g>
+<g style="mix-blend-mode:darken">
+<rect x="6" y="26.7568" width="9.51351" height="14.2703" rx="4.75676" transform="rotate(-90 6 26.7568)" fill="#F5679D"/>
+</g>
+<g style="mix-blend-mode:darken" opacity="0.7">
+<rect x="7.32324" y="14.0498" width="9.51351" height="14.2703" rx="4.75676" transform="rotate(-45 7.32324 14.0498)" fill="#FF3B25"/>
+</g>
+</svg>

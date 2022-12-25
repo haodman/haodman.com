@@ -1,18 +1,626 @@
-.about {
+/* 这里为页面建立Grid，4x3 */
+.about .aobut-content {
+    display: grid;
+    width: 100%;
+    /* height: 100vh; */
+    margin: 0 auto;
+    grid-template-columns: repeat(4, .25fr);
+    grid-template-rows: 291px 291px 291px;
+    /* 对Grid进行区分 */
+    grid-template-areas:
+        "box-about box-about box-instagram box-music"
+        "box-tool box-tool box-photo box-wechat"
+        "box-why box-why box-gmail box-pat";
+    grid-gap: 12px;
+}
+
+/* 为每个块分地盘 */
+.box-about {
+    grid-area: box-about;
+    /* background-color: aquamarine; */
+}
+
+.box-instagram {
+    grid-area: box-instagram;
+    /* background-color: aquamarine; */
+}
+
+.box-music {
+    grid-area: box-music;
+    /* background-color: aquamarine; */
+}
+
+.box-tool {
+    grid-area: box-tool;
+    /* background-color: aquamarine; */
+}
+
+.box-photo {
+    grid-area: box-photo;
+    /* background-color: aquamarine; */
+}
+
+.box-wechat {
+    grid-area: box-wechat;
+    /* background-color: aquamarine; */
+}
+
+.box-why {
+    grid-area: box-why;
+    /* background-color: aquamarine; */
+}
+
+.box-gmail {
+    grid-area: box-gmail;
+    /* background-color: rgb(170, 141, 255); */
+}
+
+.box-pat {
+    grid-area: box-pat;
+    /* background-color: aquamarine; */
+}
+
+
+/* 设定相同的背景色属性 */
+.box-about,
+.box-instagram,
+.box-music,
+.box-tool,
+.box-photo,
+.box-wechat,
+/* .box-why, */
+.box-gmail,
+.box-pat {
+    position: relative;
+    padding: 24px;
+    background: #F7F7F9;
+    border-radius: 24px;
+}
+
+/* 关于我的介绍star */
+.box-about .title-1,
+.box-tool .title-1 {
     display: flex;
-    justify-content: center;
+}
+
+/* 表情 */
+.box-about .title-1 span,
+.box-tool .title-1 span {
+    font-size: 24px;
+    line-height: 28px;
+    text-align: center;
+    margin-right: 8px;
+}
+
+/* 大标题 */
+.box-about .title-1 h1,
+.box-tool .title-1 h1 {
+    font-size: 24px;
+    line-height: 33px;
+    text-align: center;
+    /* identical to box height */
+    background: linear-gradient(270deg, #148EFF 0%, #FF70C6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+}
+
+/* 分割线 */
+.line {
+    width: auto;
+    height: 1px;
+    margin-top: 12px;
+    background: #E6E6E6;
+}
+
+/* 小标题 */
+.box-about .title-2 h2 {
+    margin-top: 24px;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #000000;
+}
+
+/* 内容 */
+.box-about .title-2 p {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 22px;
+    color: #000000;
+    margin-top: 12px;
+}
+
+
+/* 我的工具 */
+.tools {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
+    grid-gap: 12px 12px;
+}
+
+.tools .box {
+    display: flex;
+    padding: 20px;
+    background-color: white;
+    border-radius: 12px;
     align-items: center;
 }
 
-.about .project-content {
-    text-align: center;
+.tools img {
+    margin-right: 20px;
+    width: 44px;
+    height: 44px;
 }
 
-.about span {
-    text-align: center;
-    font-size: 72px;
+.tools .info h2 {
+    font-weight: 900;
+    font-size: 14px;
+    line-height: 19px;
+    color: #000000;
 }
 
-.about h2 {
-    font-size: 24px;
+.tools .info p {
+    margin-top: 2px;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 12px;
+    /* or 100% */
+    color: #000000;
+    opacity: 0.5;
+}
+
+
+/* 我的instagram */
+.box-instagram .top,
+.box-wechat .top,
+.box-gmail .top,
+.box-photo .top,
+.box-music .top {
+    display: flex;
+    justify-content: space-between;
+    /* align-items: center; */
+}
+
+/* 这里是关于名字，头像，appicon的布局 */
+.box-instagram .top .info,
+.box-wechat .top .info,
+.box-photo .top .info {
+    display: flex;
+    /* align-items: center; */
+
+}
+
+/* 头像大小 */
+.box-instagram .top .info img,
+.box-wechat .top .info img,
+.box-photo .top .info img {
+    width: 40px;
+    height: 40px;
+    margin-right: 8px;
+}
+
+/* 文字块 */
+.box-instagram .top .info .content,
+.box-wechat .top .info .content,
+.box-gmail .top .info .content,
+.box-photo .top .info .content {
+    height: 44px;
+    align-self: center;
+}
+
+/* 名称 */
+.box-instagram .top .info .content h1,
+.box-wechat .top .info .content h1,
+.box-gmail .top .info .content h1,
+.box-photo .top .info .content h1 {
+    font-weight: 900;
+    font-size: 14px;
+    color: #000000;
+}
+
+/* 账号 */
+.box-instagram .top .info .content p,
+.box-wechat .top .info .content p,
+.box-gmail .top .info .content p,
+.box-photo .top .info .content p {
+    font-weight: 400;
+    font-size: 12px;
+    color: #000000;
+    opacity: 0.5;
+}
+
+/* appicon */
+.box-instagram .top .app-icon img,
+.box-wechat .top .app-icon img,
+.box-gmail .top .app-icon img,
+.box-music .top .app-icon img {
+    width: 44px;
+}
+
+/* 内容去文案显示 */
+.box-instagram .page p,
+.box-wechat .page p {
+    margin-top: 28px;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 22px;
+    color: #000000;
+}
+
+/* 点击按钮 */
+.box-instagram button,
+.box-wechat button,
+.box-gmail button {
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 19px;
+    align-items: center;
+    text-align: center;
+    color: black;
+    position: absolute;
+    width: calc(100% - 48px);
+    bottom: 24px;
+    height: 48px;
+    background-color: #F7F7F9;
+    border: 1.5px solid rgba(0, 0, 0, 0.1);
+    border-radius: 24px;
+}
+
+.box-instagram button:hover {
+    color: white;
+    border: 1.5px solid #F7F7F9;
+    background: radial-gradient(100% 2235.19% at 0% 100%, #FED576 0%, #F47133 26.3%, #BC3081 60.9%, #4C63D2 100%)
+        /* warning: gradient uses a rotation that is not supported by CSS and may not behave as expected */
+    ;
+    border-radius: 24px;
+}
+
+
+/* 我的音乐 */
+
+.box-music {
+    /* background-color: #292A32; */
+    background-color: #000000;
+    position: relative;
+}
+
+.box-music .top .album {
+    width: 120px;
+    border: 2px solid white;
+    border-radius: 10px;
+}
+
+.box-music .song-info .song-title {
+    margin-top: 12px;
+    font-weight: 900;
+    font-size: 14px;
+    line-height: 19px;
+
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.box-music .song-info .singer {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 19px;
+
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 8px;
+}
+
+.box-music .control {
+    position: absolute;
+    /* display: flex; */
+    display: grid;
+    grid-template-columns: auto auto auto auto auto;
+    bottom: 24px;
+    justify-content: space-between;
+    width: calc(100% - 48px);
+    height: 48px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 7.5px 10px 9px 10px;
+
+}
+
+
+.box-music .control button {
+    display: flex;
+    align-items: center;
+    /* width: 30px; */
+    /* height: 30px; */
+    background-color: rgba(0, 0, 0, 0);
+    border: 0;
+}
+
+
+
+
+
+
+/* 第二行 ----  第二行 ----  第二行 ----  第二行 ----  第二行 ----  第二行 ----  */
+
+/* 我的工具 */
+.box-tool {
+    overflow: hidden;
+}
+
+.box-wechat {
+    transition: .3s ease;
+}
+
+.box-wechat button {
+    transition: .3s ease;
+}
+
+
+/* 我的相册 */
+
+.box-photo {
+    display: block;
+    background: url(../images/about/photo-bike.jpg) no-repeat;
+    background-size: cover;
+}
+
+
+
+
+
+/* 我的微信 */
+.box-wechat:hover {
+    background-color: #31CE6F;
+}
+
+/* 二维码显示 */
+.box-wechat .page .QR-code {}
+
+/* 二维码显示 */
+.box-wechat .page img {
+    visibility: hidden;
+    position: absolute;
+    left: 50%;
+    top: calc(50% + 20px);
+    transform: translate(-50%, -50%);
+    transition: .02s;
+}
+
+/* :hover后 */
+.box-wechat:hover .page img {
+    visibility: visible;
+    top: calc(50%);
+    background-color: #31CE6F;
+}
+
+.box-wechat:hover .info .content h1,
+.box-wechat:hover .info .content p {
+    color: white;
+}
+
+.box-wechat:hover .page p {
+    visibility: hidden;
+}
+
+.box-wechat:hover button {
+    color: white;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1.5px solid rgba(0, 0, 0, 0.1);
+    border-radius: 24px;
+}
+
+
+
+
+/* 第三行 ----  第三行 ----  第三行 ----  第三行 ----  第三行 ----  第三行 ----  */
+
+/* 问号 */
+.box-why {
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 24px;
+    /* 圆角消失解决方法 */
+    -webkit-transform: rotate(0deg);
+    background-color: var(--background-color);
+}
+
+.box-why img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 24px;
+    transition: .3s ease;
+
+}
+
+.box-why:hover img {
+    width: 120%;
+    height: 120%;
+}
+
+
+/* 我的邮箱 */
+.box-gmail {
+    transition: .3s ease;
+
+}
+
+.box-gmail .content {
+    position: relative;
+}
+
+/* 蓝色模糊 */
+.box-gmail .content .blue-back {
+    position: absolute;
+    margin-top: 36px;
+    width: 100%;
+    height: 104px;
+    background: linear-gradient(180deg, #4070F5 0%, #6CDEEE 100%);
+    opacity: 0.1;
+    filter: blur(12px);
+}
+
+/* 蓝色条条 */
+.box-gmail .content .blue-line {
+    position: absolute;
+    margin-top: 24px;
+    width: 4px;
+    height: 104px;
+    background: linear-gradient(180deg, #4070F5 0%, #6CDEEE 100%);
+    border-radius: 4px 0 0 4px;
+}
+
+/* 白色底色 */
+.box-gmail .content .bottom-layer {
+    position: absolute;
+    margin-top: 24px;
+    padding: 16px 24px;
+    width: calc(100% + 24px);
+    border-radius: 4px 0 0 4px;
+    background: #FFFFFF;
+    transition: .3s ease;
+
+}
+
+.box-gmail .content .bottom-layer p:nth-child(1) {
+    font-weight: 900;
+    font-size: 12px;
+    line-height: 16px;
+    color: #000000;
+    transition: .3s ease;
+
+}
+
+.box-gmail .content .bottom-layer p:nth-child(2) {
+    margin-top: 12px;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #000000;
+    transition: .3s ease;
+}
+
+.box-gmail .content .bottom-layer p:nth-child(3) {
+    margin-top: 12px;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #000000;
+    opacity: 0.5;
+    transition: .3s ease;
+}
+
+
+/* hover之后效果 */
+.box-gmail:hover {
+    /* background: linear-gradient(180deg, #30323B 0%, #272830 100%); */
+    background-color: #292A32;
+    border-radius: 24px;
+}
+
+.box-gmail:hover .top .info .content h1,
+.box-gmail:hover .top .info .content p {
+    color: white;
+}
+
+.box-gmail:hover .content .blue-back {
+    opacity: 0;
+}
+
+
+.box-gmail:hover .content .bottom-layer {
+    background: #404149;
+}
+
+.box-gmail:hover .content .bottom-layer p {
+    color: #D7D8D9;
+}
+
+.box-gmail:hover button {
+    color: white;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1.5px solid rgba(0, 0, 0, 0.1);
+    border-radius: 24px;
+}
+
+
+
+/* 拍拍我 */
+.box-pat {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.box-pat img {
+    width: 40%;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: .3s ease;
+}
+
+.box-pat:hover img {
+    width: 50%;
+}
+
+
+
+
+
+
+
+@media only screen and (max-width: 1370px) {
+    .about .aobut-content {
+        margin-top: 40px;
+        margin-bottom: -40px;
+
+        width: auto;
+        grid-template-columns: .5fr .5fr;
+        grid-template-rows: auto 291px auto 291px 291px 291px;
+        grid-template-areas:
+            "box-about box-about"
+            "box-instagram box-music"
+            "box-tool box-tool"
+            "box-photo box-wechat"
+            "box-why box-why"
+            "box-gmail box-pat";
+    }
+}
+
+
+@media only screen and (max-width: 550px) {
+    .tools {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: auto;
+        grid-template-rows: auto auto auto auto;
+        grid-gap: 12px 12px;
+    }
+
+    .about .aobut-content {
+        margin-top: 40px;
+        margin-bottom: 48px;
+        width: auto;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 291px 291px auto 291px 291px 291px 291px 291px;
+        grid-template-areas:
+            "box-about"
+            "box-instagram"
+            "box-music"
+            "box-tool"
+            "box-photo"
+            "box-wechat"
+            "box-why"
+            "box-gmail"
+            "box-pat";
+    }
 }
