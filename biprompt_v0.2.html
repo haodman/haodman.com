@@ -1408,7 +1408,7 @@ async function callClaudeAPI(text, fromLang, toLang, style, apiKey) {
       max_tokens: 4096,
       messages: [{
         role: 'user',
-        content: `Translate the following ${langNames[fromLang]} text to ${langNames[toLang]}. ${styleMap[style] || styleMap.balanced}\n\nCRITICAL RULES:\n- Output ONLY the translated text, nothing else.\n- You MUST preserve ALL original formatting symbols exactly: #, ##, ###, -, *, >, \`\`\`, numbers, bullets, indentation, line breaks, blank lines, markdown syntax, etc.\n- Do NOT add or remove any structural symbols. If the source has "# Title", the output must also have "# Title" (translated).\n- Do NOT add code fences, quotes, or any wrapping around the output.\n- Translate the text content only, keep every symbol and structure intact.\n\nSource text:\n${text}`
+        content: `Translate the following ${langNames[fromLang]} text to ${langNames[toLang]}. ${styleMap[style] || styleMap.balanced} Output ONLY the translated text — no explanations, no prefixes, no quotes, no markdown formatting, no code fences (\`\`\`), no wrapping. Preserve the original structure and formatting exactly as-is.\n\n${text}`
       }]
     })
   });
