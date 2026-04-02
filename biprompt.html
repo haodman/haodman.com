@@ -33,6 +33,86 @@
   --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
 }
 
+/* ── Dark Theme ── */
+[data-theme="dark"] {
+  --bg: #0F1117;
+  --surface: #1A1D27;
+  --surface-2: #141620;
+  --border: #2A2D3A;
+  --border-subtle: #22252F;
+  --text-primary: #E8E9ED;
+  --text-secondary: #9B9DB0;
+  --text-tertiary: #5E6073;
+  --accent: #818CF8;
+  --accent-dim: rgba(129,140,248,0.1);
+  --accent-hover: #A5B4FC;
+  --accent-subtle: rgba(129,140,248,0.08);
+  --success: #34D399;
+  --warning: #FBBF24;
+  --danger: #F87171;
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.15);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.25);
+}
+
+[data-theme="dark"] body { -webkit-font-smoothing: auto; }
+[data-theme="dark"] .header { background: rgba(26,29,39,0.88); }
+[data-theme="dark"] .logo-mark { box-shadow: 0 2px 8px rgba(129,140,248,0.3); }
+[data-theme="dark"] .view-tab.active { box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+[data-theme="dark"] .toggle-opt.active { box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+[data-theme="dark"] .btn-primary { box-shadow: 0 1px 2px rgba(129,140,248,0.2); }
+[data-theme="dark"] .btn-primary:hover { box-shadow: 0 2px 6px rgba(129,140,248,0.25); }
+[data-theme="dark"] .btn-danger:hover { background: rgba(248,113,113,0.1); }
+
+[data-theme="dark"] .api-status.connected { background: rgba(52,211,153,0.1); color: #34D399; border-color: rgba(52,211,153,0.2); }
+[data-theme="dark"] .api-status.demo { background: rgba(251,191,36,0.08); color: #FBBF24; border-color: rgba(251,191,36,0.15); }
+
+[data-theme="dark"] .mod-block:hover { border-color: rgba(129,140,248,0.25); box-shadow: 0 2px 8px rgba(129,140,248,0.08); }
+[data-theme="dark"] .mod-block.drag-over { box-shadow: 0 0 0 2px var(--accent-dim); }
+[data-theme="dark"] .mod-type-badge.role    { background: rgba(138,109,43,0.15); color: #E0C068; border-color: rgba(138,109,43,0.3); }
+[data-theme="dark"] .mod-type-badge.context { background: rgba(54,99,176,0.15); color: #7EB0F4; border-color: rgba(54,99,176,0.3); }
+[data-theme="dark"] .mod-type-badge.rules   { background: rgba(26,127,75,0.15); color: #5EE0A0; border-color: rgba(26,127,75,0.3); }
+[data-theme="dark"] .mod-type-badge.skills  { background: rgba(150,49,106,0.15); color: #E880BA; border-color: rgba(150,49,106,0.3); }
+[data-theme="dark"] .mod-type-badge.output  { background: rgba(110,64,168,0.15); color: #B89CEF; border-color: rgba(110,64,168,0.3); }
+[data-theme="dark"] .mod-type-badge.examples{ background: rgba(149,68,32,0.15); color: #E8A070; border-color: rgba(149,68,32,0.3); }
+[data-theme="dark"] .mod-type-badge:hover { filter: brightness(1.1); }
+
+[data-theme="dark"] .token-badge.warn { background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.2); color: #FBBF24; }
+[data-theme="dark"] .info-box { color: var(--accent); }
+
+[data-theme="dark"] .modal-overlay { background: rgba(0,0,0,0.55); }
+[data-theme="dark"] .modal { box-shadow: 0 24px 48px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.25); }
+[data-theme="dark"] .toast { background: #E8E9ED; color: #0F1117; }
+
+[data-theme="dark"] .compile-tab.active { box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+[data-theme="dark"] select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235E6073' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+[data-theme="dark"] .form-select-full {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235E6073' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* ── Theme Toggle ── */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  cursor: pointer;
+  color: var(--text-tertiary);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+.theme-toggle:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
+.theme-toggle svg { width: 15px; height: 15px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.theme-toggle:hover svg { transform: rotate(20deg); }
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1647,6 +1727,8 @@ const Ic = {
   Translate: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>,
   Sparkle: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>,
   Send: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>,
+  Sun: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>,
+  Moon: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>,
 };
 
 // ── Paragraph Hover Highlight Logic ──
@@ -2313,6 +2395,16 @@ function App() {
   // ── View mode ──
   const [viewMode, setViewMode] = useState(saved?.viewMode || 'split');
 
+  // ── Theme ──
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem('biprompt_theme') || 'light'; } catch(e) { return 'light'; }
+  });
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem('biprompt_theme', theme); } catch(e) {}
+  }, [theme]);
+  const toggleTheme = useCallback(() => setTheme(t => t === 'light' ? 'dark' : 'light'), []);
+
   // ── Split view state ──
   const [leftText, setLeftText] = useState(saved?.leftText || '');
   const [rightText, setRightText] = useState(saved?.rightText || '');
@@ -2735,6 +2827,9 @@ function App() {
           </button>
           <button className="btn btn-subtle" onClick={openSettings}>
             <Ic.Settings />&nbsp;设置
+          </button>
+          <button className="theme-toggle" onClick={toggleTheme} title={theme === 'light' ? '切换深色模式' : '切换浅色模式'}>
+            {theme === 'light' ? <Ic.Moon /> : <Ic.Sun />}
           </button>
           {apiKey
             ? <span className="api-status connected">● Claude AI 已连接</span>
