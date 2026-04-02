@@ -1020,8 +1020,8 @@ a:hover { text-decoration: underline; }
   color: var(--text-primary);
   background: var(--surface);
   overflow-y: auto;
-  min-height: 60px;
-  max-height: 400px;
+  min-height: 120px;
+  max-height: 600px;
 }
 
 .mod-textarea::placeholder {
@@ -1819,7 +1819,7 @@ function EditorPane({ textareaRef, value, onChange, onScroll, lang, onLangChange
 // ── Auto-resizing textarea for module view ──
 const AutoTextarea = React.forwardRef(function AutoTextarea({ value, onChange, placeholder, className, onScroll, onMouseMove, onMouseLeave }, fwdRef) {
   const innerRef = useRef(null);
-  const MAX_H = 400;
+  const MAX_H = 600;
 
   // Merge forwarded ref and inner ref
   useEffect(() => {
