@@ -1888,12 +1888,18 @@ function ModuleBlock({ block, leftLang, rightLang, style, apiKey, autoXlate, onU
       onUpdate({ ...fresh, [aiSide]: result });
       setAiInput('');
       showToast('✓ AI 优化完成');
+      // Auto-translate to the other side
+      if (autoXlate) {
+        const dir = aiSide === 'left' ? 'ltr' : 'rtl';
+        // Small delay to let state update propagate
+        setTimeout(() => doBlockTranslate(dir), 300);
+      }
     } catch (e) {
       showToast('⚠ AI 优化失败: ' + e.message);
     } finally {
       setAiBusy(false);
     }
-  }, [aiInput, aiSide, leftLang, rightLang, apiKey, onUpdate, showToast]);
+  }, [aiInput, aiSide, leftLang, rightLang, apiKey, autoXlate, onUpdate, showToast, doBlockTranslate]);
 
   const cycleType = () => {
     const idx = BLOCK_TYPES.findIndex(t => t.id === block.type);
