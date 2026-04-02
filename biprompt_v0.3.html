@@ -1864,7 +1864,7 @@ function ModuleBlock({ block, leftLang, rightLang, style, apiKey, autoXlate, onU
           <button className="icon-btn" onClick={() => onDuplicate(block)} title="复制模块">
             <Ic.Duplicate />
           </button>
-          <button className="icon-btn" onClick={() => onDelete(block.id)} title="删除模块">
+          <button className="icon-btn" onClick={() => onDelete(block.id)} title="删除模块" style={{color: 'var(--danger)'}}>
             <Ic.Trash />
           </button>
         </div>
