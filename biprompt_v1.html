@@ -1377,17 +1377,6 @@ const countTokens = (text) => {
 const countChars = (text) => (text || '').length;
 
 let _blockIdCounter = 100;
-// Ensure counter is always higher than any existing block id (from localStorage)
-try {
-  const _savedRaw = localStorage.getItem('biprompt_state');
-  if (_savedRaw) {
-    const _savedData = JSON.parse(_savedRaw);
-    if (_savedData?.blocks) {
-      const _maxId = _savedData.blocks.reduce((mx, b) => Math.max(mx, typeof b.id === 'number' ? b.id : 0), 0);
-      if (_maxId >= _blockIdCounter) _blockIdCounter = _maxId;
-    }
-  }
-} catch(_e) {}
 const newBlockId = () => ++_blockIdCounter;
 
 // ── Translation Engine ──
@@ -1408,7 +1397,7 @@ async function callClaudeAPI(text, fromLang, toLang, style, apiKey) {
       max_tokens: 4096,
       messages: [{
         role: 'user',
-        content: `Translate the following ${langNames[fromLang]} text to ${langNames[toLang]}. ${styleMap[style] || styleMap.balanced} Output ONLY the translated text — no explanations, no prefixes, no quotes, no markdown formatting, no code fences (\`\`\`), no wrapping. Preserve the original structure and formatting exactly as-is.\n\n${text}`
+        content: `Translate the following ${langNames[fromLang]} text to ${langNames[toLang]}. ${styleMap[style] || styleMap.balanced} Output only the translation — no explanations, no prefixes, no quotes.\n\n${text}`
       }]
     })
   });
@@ -2085,7 +2074,6 @@ function App() {
   const [showCompile, setShowCompile] = useState(false);
   const [dragId, setDragId] = useState(null);
   const [dragOverId, setDragOverId] = useState(null);
-  const dragIdRef = useRef(null);
 
   const leftRef = useRef(null);
   const rightRef = useRef(null);
@@ -2395,12 +2383,10 @@ function App() {
 
   // ── Drag and drop ──
   const handleDragStart = useCallback((id) => {
-    dragIdRef.current = id;
     setDragId(id);
   }, []);
 
   const handleDragEnd = useCallback(() => {
-    dragIdRef.current = null;
     setDragId(null);
     setDragOverId(null);
   }, []);
@@ -2415,10 +2401,9 @@ function App() {
   }, []);
 
   const handleDrop = useCallback((targetId) => {
-    const fromId = dragIdRef.current;
-    if (!fromId || fromId === targetId) { dragIdRef.current = null; setDragId(null); setDragOverId(null); return; }
+    if (!dragId || dragId === targetId) { setDragId(null); setDragOverId(null); return; }
     setBlocks(bs => {
-      const fromIdx = bs.findIndex(b => b.id === fromId);
+      const fromIdx = bs.findIndex(b => b.id === dragId);
       const toIdx = bs.findIndex(b => b.id === targetId);
       if (fromIdx < 0 || toIdx < 0) return bs;
       const next = [...bs];
@@ -2426,10 +2411,9 @@ function App() {
       next.splice(toIdx, 0, moved);
       return next;
     });
-    dragIdRef.current = null;
     setDragId(null);
     setDragOverId(null);
-  }, []);
+  }, [dragId]);
 
   // ── Derived ──
   const leftTokens = useMemo(() => countTokens(leftText), [leftText]);
