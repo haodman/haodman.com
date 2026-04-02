@@ -1,0 +1,2899 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BiPrompt — 双语 Prompt 编辑器</title>
+<style>
+:root {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f9f9fb;
+  --border: #e4e4e7;
+  --border-subtle: #f0f0f2;
+  --text-primary: #0f0f11;
+  --text-secondary: #62626b;
+  --text-tertiary: #a0a0ab;
+  --accent: #6366f1;
+  --accent-dim: #eef2ff;
+  --accent-hover: #4f46e5;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 8px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 24px rgba(0,0,0,0.09), 0 4px 8px rgba(0,0,0,0.05);
+  --radius-xs: 4px;
+  --radius-sm: 7px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 52px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  user-select: none;
+}
+
+.logo-mark {
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+}
+
+.logo-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text-primary);
+}
+
+.logo-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  padding: 2px 8px;
+  background: var(--border-subtle);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.api-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.api-status.connected {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.api-status.demo {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* ── View Tabs ── */
+.view-tabs {
+  display: flex;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 1px;
+}
+
+.view-tab {
+  padding: 4px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+  font-family: var(--font);
+  letter-spacing: -0.1px;
+}
+
+.view-tab.active {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-xs);
+}
+
+.view-tab:hover:not(.active) { color: var(--text-primary); }
+
+/* ── Toolbar ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  height: 44px;
+  gap: 4px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.tb-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tb-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 4px;
+  user-select: none;
+}
+
+.tb-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 8px;
+  flex-shrink: 0;
+}
+
+.tb-spacer { flex: 1; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+  font-family: var(--font);
+  line-height: 1;
+  outline: none;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.btn-ghost:hover { background: var(--bg); color: var(--text-primary); }
+
+.btn-subtle {
+  background: var(--bg);
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.btn-subtle:hover { background: var(--border); color: var(--text-primary); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+.btn-outline:hover { background: var(--bg); border-color: var(--text-tertiary); }
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  box-shadow: 0 1px 3px rgba(99,102,241,0.3);
+}
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border-color: transparent;
+}
+.btn-danger:hover { background: #fef2f2; }
+
+.btn-sm { padding: 3px 8px; font-size: 11px; }
+
+/* ── Toggle Pill ── */
+.toggle-pill {
+  display: flex;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 1px;
+}
+
+.toggle-opt {
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.12s;
+  font-family: var(--font);
+}
+
+.toggle-opt.active {
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+/* ── Select ── */
+select {
+  appearance: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 24px 4px 9px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: var(--font);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a0a0ab' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 7px center;
+  transition: border-color 0.12s, box-shadow 0.12s;
+  outline: none;
+}
+
+select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+
+/* ── Icon Button ── */
+.icon-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-xs);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.12s;
+  flex-shrink: 0;
+}
+
+.icon-btn:hover { background: var(--bg); color: var(--text-primary); }
+.icon-btn:active { transform: scale(0.92); }
+
+/* ── Editor Area ── */
+.editor-area {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Panel ── */
+.editor-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+  background: var(--surface);
+}
+
+.editor-panel:first-child { border-right: 1px solid var(--border); }
+
+/* ── Panel Header ── */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  height: 44px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+
+.panel-lang-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-select {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 2px 20px 2px 2px;
+  font-family: var(--font);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23a0a0ab' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 2px center;
+  outline: none;
+  letter-spacing: -0.2px;
+}
+
+.xlating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+
+.spinner {
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid rgba(99,102,241,0.25);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.panel-actions { display: flex; align-items: center; gap: 2px; }
+
+/* ── Textarea ── */
+.editor-textarea {
+  flex: 1;
+  width: 100%;
+  padding: 20px 24px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-primary);
+  background: transparent;
+  overflow-y: auto;
+  caret-color: var(--accent);
+  position: relative;
+  z-index: 2;
+}
+
+.editor-textarea::placeholder {
+  color: var(--text-tertiary);
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+/* ── Paragraph Hover Highlight ── */
+.panel-body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.panel-body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  z-index: 0;
+}
+
+.para-highlight {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  border-radius: 7px;
+  background: rgba(99, 102, 241, 0.055);
+  border: 1px solid rgba(99, 102, 241, 0.09);
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.12s ease;
+}
+
+/* ── Swap Divider ── */
+.swap-zone {
+  width: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 2;
+  gap: 8px;
+}
+
+.swap-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.swap-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  transform: rotate(180deg);
+  box-shadow: 0 2px 10px rgba(99,102,241,0.4);
+}
+
+.swap-btn:active { transform: rotate(180deg) scale(0.9); }
+
+.swap-line {
+  width: 1px;
+  flex: 1;
+  background: var(--border);
+  max-height: 80px;
+}
+
+/* ── Side Panel ── */
+.side-panel {
+  width: 228px;
+  border-left: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.side-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.side-panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.side-panel-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.template-card {
+  padding: 9px 11px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.12s;
+  margin-bottom: 1px;
+}
+
+.template-card:hover { background: var(--bg); }
+
+.template-card-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+
+.template-card-desc {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.3;
+}
+
+.history-card {
+  padding: 9px 11px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.12s;
+  margin-bottom: 1px;
+}
+
+.history-card:hover { background: var(--bg); }
+
+.history-time {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.history-preview {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.empty-state {
+  padding: 24px 14px;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* ── Status Bar ── */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 30px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.status-group { display: flex; align-items: center; gap: 14px; }
+
+.status-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.status-dot.warn { background: var(--warning); }
+.status-dot.err { background: var(--danger); }
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,15,20,0.35);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: overlayIn 0.15s ease;
+}
+
+@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 460px;
+  max-width: 92vw;
+  overflow: hidden;
+  animation: modalIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid var(--border);
+}
+
+@keyframes modalIn { from { opacity: 0; transform: scale(0.92) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+.modal-header {
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--accent-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.modal-title { font-size: 15px; font-weight: 700; }
+.modal-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+
+.modal-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
+
+.modal-footer {
+  padding: 14px 22px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background: var(--surface-2);
+}
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+
+.form-label { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+
+.form-hint { font-size: 11px; color: var(--text-tertiary); line-height: 1.5; margin-top: 3px; }
+
+.form-input {
+  width: 100%;
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  background: var(--bg);
+  transition: border-color 0.12s, box-shadow 0.12s;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+
+.form-select-full {
+  appearance: none;
+  width: 100%;
+  padding: 8px 28px 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg);
+  font-family: var(--font);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a0a0ab' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  outline: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.form-select-full:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+
+.info-box {
+  padding: 10px 12px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(99,102,241,0.18);
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  color: #4338ca;
+  line-height: 1.6;
+}
+
+/* ── Notification Toast ── */
+.toast {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%) translateY(70px);
+  background: #18181b;
+  color: #fafafa;
+  padding: 9px 18px;
+  border-radius: 24px;
+  font-size: 12.5px;
+  font-weight: 500;
+  z-index: 300;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.toast.visible { transform: translateX(-50%) translateY(0); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+/* ── Token counter badge ── */
+.token-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  background: var(--border-subtle);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-tertiary);
+}
+
+.token-badge.warn { background: #fef3c7; border-color: #fde68a; color: #92400e; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ══════════════════════════════════════
+   MODULE VIEW STYLES
+   ══════════════════════════════════════ */
+.module-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.module-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.module-toolbar-gap { flex: 1; }
+
+.module-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Module Block ── */
+.mod-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
+}
+
+.mod-block:hover {
+  border-color: rgba(99,102,241,0.25);
+  box-shadow: var(--shadow-sm);
+}
+
+.mod-block.dragging {
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+.mod-block.drag-over {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim);
+}
+
+.mod-block.disabled { opacity: 0.55; }
+
+.mod-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-subtle);
+  user-select: none;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  letter-spacing: 2px;
+  flex-shrink: 0;
+  padding: 2px 0;
+  line-height: 1;
+}
+
+.drag-handle:active { cursor: grabbing; }
+
+.mod-type-badge {
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.12s;
+  border: 1px solid;
+  flex-shrink: 0;
+}
+
+.mod-type-badge.role    { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+.mod-type-badge.context { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+.mod-type-badge.rules   { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+.mod-type-badge.skills  { background: #fce7f3; color: #9d174d; border-color: #f9a8d4; }
+.mod-type-badge.output  { background: #fae8ff; color: #6b21a8; border-color: #d8b4fe; }
+.mod-type-badge.examples{ background: #ffedd5; color: #9a3412; border-color: #fdba74; }
+.mod-type-badge.custom  { background: var(--border-subtle); color: var(--text-secondary); border-color: var(--border); }
+
+.mod-type-badge:hover { filter: brightness(0.95); }
+
+.mod-name-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font);
+  min-width: 0;
+}
+
+.mod-name-input::placeholder { color: var(--text-tertiary); }
+
+.mod-toggle {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  background: var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  border: none;
+}
+
+.mod-toggle.on { background: var(--accent); }
+
+.mod-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.2s;
+}
+
+.mod-toggle.on::after { transform: translateX(14px); }
+
+.mod-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ── Module Body (dual panes) ── */
+.mod-body {
+  display: flex;
+  min-height: 0;
+}
+
+.mod-body.collapsed { display: none; }
+
+.mod-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mod-pane:first-child { border-right: 1px solid var(--border-subtle); }
+
+.mod-pane-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.mod-pane-lang {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.mod-pane-gap { flex: 1; }
+
+.mod-pane-tok {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.mod-textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 12px 14px;
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--text-primary);
+  background: var(--surface);
+  overflow-y: auto;
+  min-height: 60px;
+  max-height: 400px;
+}
+
+.mod-textarea::placeholder {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.mod-textarea-wrap {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.mod-textarea-wrap .mod-textarea {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+}
+
+.mod-para-highlight {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  border-radius: 5px;
+  background: rgba(99, 102, 241, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.10);
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.10s ease;
+}
+
+/* ── Module Footer ── */
+.mod-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.mod-footer-gap { flex: 1; }
+
+.mod-tok-total {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  padding: 1px 7px;
+  background: var(--border-subtle);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+/* ── Compile Modal ── */
+.compile-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.compile-tab {
+  flex: 1;
+  padding: 7px 10px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.12s;
+  background: none;
+  font-family: var(--font);
+}
+
+.compile-tab.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.compile-tab:hover:not(.active) { background: var(--bg); }
+
+.compile-output {
+  width: 100%;
+  min-height: 220px;
+  max-height: 50vh;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  font-family: var(--font);
+  color: var(--text-primary);
+  background: var(--surface-2);
+  resize: vertical;
+  outline: none;
+  overflow-y: auto;
+}
+
+.compile-output:focus { border-color: var(--accent); }
+
+/* ── Empty Module State ── */
+.mod-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-tertiary);
+}
+
+.mod-empty-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.mod-empty-text {
+  font-size: 13px;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;color:#888;flex-direction:column;gap:12px"><div style="width:28px;height:28px;border:3px solid #e4e4e7;border-top-color:#6366f1;border-radius:50%;animation:spin 0.8s linear infinite"></div><span style="font-size:14px">BiPrompt 加载中...</span><style>@keyframes spin{to{transform:rotate(360deg)}}</style></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+<script>
+// Global error handler — catches Babel compile errors + runtime errors
+window.onerror = function(msg, src, line, col, err) {
+  var root = document.getElementById('root');
+  if (root) {
+    root.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;color:#ef4444;flex-direction:column;gap:12px;padding:40px;text-align:center">' +
+      '<div style="font-size:20px;font-weight:700">⚠ BiPrompt 出错了</div>' +
+      '<pre style="font-size:12px;color:#666;background:#f5f5f5;padding:16px;border-radius:8px;max-width:700px;overflow:auto;text-align:left;white-space:pre-wrap">' +
+      msg + '\nLine: ' + line + ', Col: ' + col +
+      (err && err.stack ? '\n\n' + err.stack : '') + '</pre>' +
+      '<button onclick="location.reload()" style="margin-top:12px;padding:8px 24px;background:#6366f1;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px">重新加载</button></div>';
+  }
+};
+
+// Intercept console.error to catch Babel compilation failures
+var _origConsoleError = console.error;
+console.error = function() {
+  _origConsoleError.apply(console, arguments);
+  var msg = Array.prototype.join.call(arguments, ' ');
+  if (msg.indexOf('babel') !== -1 || msg.indexOf('SyntaxError') !== -1 || msg.indexOf('Unexpected') !== -1) {
+    var root = document.getElementById('root');
+    if (root && root.querySelector && root.querySelector('.loading-spinner')) {
+      root.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;color:#ef4444;flex-direction:column;gap:12px;padding:40px;text-align:center">' +
+        '<div style="font-size:20px;font-weight:700">⚠ 代码编译失败</div>' +
+        '<pre style="font-size:11px;color:#666;background:#f5f5f5;padding:16px;border-radius:8px;max-width:700px;overflow:auto;text-align:left;white-space:pre-wrap">' +
+        msg.slice(0, 2000) + '</pre>' +
+        '<button onclick="location.reload()" style="margin-top:12px;padding:8px 24px;background:#6366f1;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px">重新加载</button></div>';
+    }
+  }
+};
+
+// CDN load check
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof Babel === 'undefined') {
+      document.getElementById('root').innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;color:#ef4444;flex-direction:column;gap:12px;padding:40px;text-align:center">' +
+        '<div style="font-size:20px;font-weight:700">⚠ BiPrompt 加载失败</div>' +
+        '<div style="font-size:14px;color:#666;max-width:400px">无法加载依赖库，请检查网络连接后刷新。</div>' +
+        '<button onclick="location.reload()" style="margin-top:12px;padding:8px 24px;background:#6366f1;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px">重新加载</button></div>';
+    }
+  }, 8000);
+});
+</script>
+
+<script type="text/babel">
+const { useState, useRef, useEffect, useCallback, useMemo } = React;
+
+// ── Language definitions ──
+const LANGUAGES = {
+  zh: { name: '中文', flag: '🇨🇳', label: '中文 (ZH)' },
+  en: { name: 'English', flag: '🇺🇸', label: 'English (EN)' },
+  ja: { name: '日本語', flag: '🇯🇵', label: '日本語 (JA)' },
+  ko: { name: '한국어', flag: '🇰🇷', label: '한국어 (KO)' },
+  fr: { name: 'Français', flag: '🇫🇷', label: 'Français (FR)' },
+  de: { name: 'Deutsch', flag: '🇩🇪', label: 'Deutsch (DE)' },
+  es: { name: 'Español', flag: '🇪🇸', label: 'Español (ES)' },
+  pt: { name: 'Português', flag: '🇧🇷', label: 'Português (PT)' },
+  ru: { name: 'Русский', flag: '🇷🇺', label: 'Русский (RU)' },
+  ar: { name: 'العربية', flag: '🇸🇦', label: 'العربية (AR)' },
+};
+
+// ── Block types ──
+const BLOCK_TYPES = [
+  { id: 'role',     label: 'Role',       emoji: '👤' },
+  { id: 'context',  label: 'Context',    emoji: '📋' },
+  { id: 'rules',    label: 'Rules',      emoji: '📐' },
+  { id: 'skills',   label: 'Skill Pool', emoji: '🛠' },
+  { id: 'output',   label: 'Output',     emoji: '📤' },
+  { id: 'examples', label: 'Examples',   emoji: '💡' },
+  { id: 'custom',   label: 'Custom',     emoji: '📝' },
+];
+
+// ── Prompt Templates ──
+const TEMPLATES = [
+  {
+    id: 1,
+    name: 'AI 通用助手',
+    desc: 'General AI assistant',
+    zh: `你是一个专业、友好的 AI 助手。
+
+你的工作方式：
+1. 准确理解用户的意图
+2. 提供清晰、有条理的回答
+3. 遇到不确定的情况，主动告知用户
+
+请始终保持专业、尊重和建设性的态度，用简洁的语言表达复杂的想法。`,
+    en: `You are a professional and friendly AI assistant.
+
+Your approach:
+1. Accurately understand user intent
+2. Provide clear and well-structured responses
+3. Proactively inform users when uncertain
+
+Always maintain a professional, respectful, and constructive attitude, expressing complex ideas in concise language.`
+  },
+  {
+    id: 2,
+    name: '代码审查专家',
+    desc: 'Code review expert',
+    zh: `你是一名经验丰富的高级软件工程师，专门负责代码审查。
+
+审查重点：
+- 代码质量与可读性
+- 潜在的 Bug 和安全漏洞
+- 性能优化空间
+- 架构设计合理性
+
+请提供具体、可操作的改进建议，并解释原因。保持建设性的反馈风格。`,
+    en: `You are an experienced senior software engineer specializing in code review.
+
+Review focus:
+- Code quality and readability
+- Potential bugs and security vulnerabilities
+- Performance optimization opportunities
+- Architecture design soundness
+
+Provide specific, actionable improvement suggestions with explanations. Maintain a constructive feedback style.`
+  },
+  {
+    id: 3,
+    name: '产品经理顾问',
+    desc: 'Product manager consultant',
+    zh: `你是一位经验丰富的产品经理，熟悉从 0 到 1 打造产品的全过程。
+
+你擅长：
+- 识别和定义核心用户问题
+- 平衡商业价值与用户体验
+- 制定清晰的产品路线图
+- 跨团队沟通与对齐
+
+请用结构化的产品思维帮我分析问题，并给出可落地的建议。`,
+    en: `You are an experienced product manager familiar with the full process of building products from 0 to 1.
+
+Your strengths:
+- Identifying and defining core user problems
+- Balancing business value and user experience
+- Creating clear product roadmaps
+- Cross-team communication and alignment
+
+Use structured product thinking to analyze problems and provide actionable recommendations.`
+  },
+  {
+    id: 4,
+    name: '创意写作教练',
+    desc: 'Creative writing coach',
+    zh: `你是一位才华横溢的创意写作教练，帮助作者突破创作瓶颈。
+
+你的方式：
+- 激发作者独特的创意潜能
+- 分析故事结构与叙事节奏
+- 给出具体的文字润色建议
+- 提供多角度的创作视角
+
+请用鼓励性和启发性的方式提供反馈，帮助作者找到自己的声音。`,
+    en: `You are a talented creative writing coach who helps authors break through creative blocks.
+
+Your approach:
+- Inspire authors' unique creative potential
+- Analyze story structure and narrative pacing
+- Offer specific writing refinement suggestions
+- Provide multi-angle creative perspectives
+
+Provide feedback in an encouraging and inspiring manner to help authors find their voice.`
+  },
+  {
+    id: 5,
+    name: '数据分析师',
+    desc: 'Data analyst expert',
+    zh: `你是一位资深数据分析师，擅长从数据中提取有价值的业务洞察。
+
+核心能力：
+1. 识别数据中的关键趋势和异常
+2. 将复杂的统计分析转化为清晰的业务语言
+3. 提供基于数据的可行性建议
+4. 构建直观的数据可视化方案
+
+请帮助我系统地思考数据问题，并给出实际可落地的分析结论。`,
+    en: `You are a senior data analyst skilled at extracting valuable business insights from data.
+
+Core capabilities:
+1. Identify key trends and anomalies in data
+2. Translate complex statistical analysis into clear business language
+3. Provide actionable data-driven recommendations
+4. Design intuitive data visualization solutions
+
+Help me think systematically about data problems and draw practical, actionable conclusions.`
+  },
+  {
+    id: 6,
+    name: '教学设计师',
+    desc: 'Instructional designer',
+    zh: `你是一位专业的教学设计师，擅长将复杂知识转化为易于理解的学习内容。
+
+设计原则：
+- 以学习者为中心，关注认知负荷
+- 运用费曼技巧和苏格拉底式提问
+- 结合实际案例加深理解
+- 建立清晰的知识脉络和层次
+
+请帮助我设计高效、有吸引力的学习体验。`,
+    en: `You are a professional instructional designer skilled at transforming complex knowledge into easily digestible learning content.
+
+Design principles:
+- Learner-centered, mindful of cognitive load
+- Apply Feynman technique and Socratic questioning
+- Integrate real-world examples for deeper understanding
+- Build clear knowledge frameworks and hierarchies
+
+Help me design efficient and engaging learning experiences.`
+  },
+];
+
+// ── Utilities ──
+const countTokens = (text) => {
+  if (!text) return 0;
+  const cjk = (text.match(/[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af\u3400-\u4dbf]/g) || []).length;
+  const other = text.length - cjk;
+  return Math.round(cjk / 1.5 + other / 4);
+};
+
+const countChars = (text) => (text || '').length;
+
+let _blockIdCounter = 100;
+const newBlockId = () => ++_blockIdCounter;
+
+// ── Translation Engine ──
+async function callClaudeAPI(text, fromLang, toLang, style, apiKey) {
+  const langNames = { zh:'中文', en:'English', ja:'日本語', ko:'한국어', fr:'Français', de:'Deutsch', es:'Español', pt:'Português', ru:'Русский', ar:'العربية' };
+  const styleMap = { formal:'Use formal and professional language.', balanced:'Use natural and fluent language.', casual:'Use casual, conversational language.' };
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 4096,
+      messages: [{
+        role: 'user',
+        content: `Translate the following ${langNames[fromLang]} text to ${langNames[toLang]}. ${styleMap[style] || styleMap.balanced} Output only the translation — no explanations, no prefixes, no quotes.\n\n${text}`
+      }]
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  return data.content[0].text;
+}
+
+async function translate(text, fromLang, toLang, style, apiKey) {
+  if (!text.trim()) return '';
+
+  if (!apiKey) {
+    await new Promise(r => setTimeout(r, 500 + Math.random() * 400));
+    return `[演示模式 / Demo Mode]\n\n在设置中配置 Claude API Key 以启用真实翻译。\nConfigure your Claude API Key in Settings to enable real translation.\n\n---\n原文 / Source:\n${text}`;
+  }
+
+  return await callClaudeAPI(text, fromLang, toLang, style, apiKey);
+}
+
+// ── SVG Icons ──
+const Ic = {
+  Settings: () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>,
+  Copy: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>,
+  Trash: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+  Download: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+  Template: () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
+  History: () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>,
+  Swap: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>,
+  X: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  Save: () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>,
+  Link: () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
+  CopyMerge: () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
+  ChevDown: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>,
+  ChevRight: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>,
+  Plus: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  Duplicate: () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
+  Compile: () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>,
+  Translate: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>,
+};
+
+// ── Paragraph Hover Highlight Logic ──
+const EDITOR_FONT_SIZE = 14;
+const EDITOR_LINE_H = EDITOR_FONT_SIZE * 1.8;
+const EDITOR_PAD_TOP = 20;
+const EDITOR_PAD_H   = 24;
+
+const _measureCanvas = document.createElement('canvas');
+const _modFont = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Helvetica Neue", sans-serif';
+
+function getParaHighlight(value, mouseY, textarea, cfg) {
+  if (!textarea || !value) return null;
+  const fontSize = cfg?.fontSize || EDITOR_FONT_SIZE;
+  const lineH    = cfg?.lineH   || EDITOR_LINE_H;
+  const padTop   = cfg?.padTop  || EDITOR_PAD_TOP;
+  const padH     = cfg?.padH    || EDITOR_PAD_H;
+
+  const rect = textarea.getBoundingClientRect();
+  const availW = rect.width - padH * 2;
+  if (availW <= 0) return null;
+
+  const ctx = _measureCanvas.getContext('2d');
+  ctx.font = `${fontSize}px ${_modFont}`;
+
+  const scrollTop = textarea.scrollTop;
+  const relY = mouseY - rect.top - padTop + scrollTop;
+  const hovVisLine = Math.max(0, Math.floor(relY / lineH));
+
+  const rawLines = value.split('\n');
+  let cumVis = 0;
+  const lineInfos = rawLines.map(line => {
+    const isEmpty = line.trim() === '';
+    const vCount = isEmpty ? 1 : Math.max(1, Math.ceil(ctx.measureText(line).width / availW));
+    const info = { isEmpty, visStart: cumVis, vCount };
+    cumVis += vCount;
+    return info;
+  });
+
+  const paragraphs = [];
+  let pStart = -1, pEnd = -1;
+  for (const li of lineInfos) {
+    if (!li.isEmpty) {
+      if (pStart === -1) pStart = li.visStart;
+      pEnd = li.visStart + li.vCount - 1;
+    } else {
+      if (pStart !== -1) { paragraphs.push({ visStart: pStart, visEnd: pEnd }); pStart = -1; }
+    }
+  }
+  if (pStart !== -1) paragraphs.push({ visStart: pStart, visEnd: pEnd });
+
+  const para = paragraphs.find(p => hovVisLine >= p.visStart && hovVisLine <= p.visEnd);
+  if (!para) return null;
+
+  const top    = para.visStart * lineH + padTop - scrollTop;
+  const height = (para.visEnd - para.visStart + 1) * lineH;
+
+  const taH = rect.height - padTop;
+  if (top + height < 0 || top > taH) return null;
+
+  return { top, height };
+}
+
+// ── Cross-pane paragraph highlight helpers (for module view) ──
+// All positions returned are relative to the textarea's offsetParent (mod-pane).
+// We compute: paneOffset = textarea.top - pane.top, then add that to the
+// textarea-local highlight coords so the overlay aligns pixel-perfectly.
+
+function buildParaList(value, textarea, cfg) {
+  if (!textarea || !value) return [];
+  const fontSize = cfg?.fontSize || EDITOR_FONT_SIZE;
+  const padH     = cfg?.padH    || EDITOR_PAD_H;
+  const rect = textarea.getBoundingClientRect();
+  const availW = rect.width - padH * 2;
+  if (availW <= 0) return [];
+
+  const ctx = _measureCanvas.getContext('2d');
+  ctx.font = `${fontSize}px ${_modFont}`;
+
+  const rawLines = value.split('\n');
+  let cumVis = 0;
+  const lineInfos = rawLines.map(line => {
+    const isEmpty = line.trim() === '';
+    const vCount = isEmpty ? 1 : Math.max(1, Math.ceil(ctx.measureText(line).width / availW));
+    const info = { isEmpty, visStart: cumVis, vCount };
+    cumVis += vCount;
+    return info;
+  });
+
+  const paragraphs = [];
+  let pStart = -1, pEnd = -1;
+  for (const li of lineInfos) {
+    if (!li.isEmpty) {
+      if (pStart === -1) pStart = li.visStart;
+      pEnd = li.visStart + li.vCount - 1;
+    } else {
+      if (pStart !== -1) { paragraphs.push({ visStart: pStart, visEnd: pEnd }); pStart = -1; }
+    }
+  }
+  if (pStart !== -1) paragraphs.push({ visStart: pStart, visEnd: pEnd });
+  return paragraphs;
+}
+
+function findHoveredParaIndex(paragraphs, mouseY, textarea, cfg) {
+  if (!textarea || !paragraphs.length) return -1;
+  const lineH  = cfg?.lineH  || EDITOR_LINE_H;
+  const padTop = cfg?.padTop || EDITOR_PAD_TOP;
+  const rect = textarea.getBoundingClientRect();
+  const scrollTop = textarea.scrollTop;
+  const relY = mouseY - rect.top - padTop + scrollTop;
+  const hovVisLine = Math.max(0, Math.floor(relY / lineH));
+  return paragraphs.findIndex(p => hovVisLine >= p.visStart && hovVisLine <= p.visEnd);
+}
+
+// Returns { top, height } relative to textarea's top edge (for use inside mod-textarea-wrap)
+function paraIndexToHighlight(paragraphs, index, textarea, cfg) {
+  if (index < 0 || index >= paragraphs.length || !textarea) return null;
+  const lineH  = cfg?.lineH  || EDITOR_LINE_H;
+  const padTop = cfg?.padTop || EDITOR_PAD_TOP;
+  const p = paragraphs[index];
+  const scrollTop = textarea.scrollTop;
+
+  const top    = p.visStart * lineH + padTop - scrollTop;
+  const height = (p.visEnd - p.visStart + 1) * lineH;
+
+  // Clamp to textarea visible area
+  const taH = textarea.getBoundingClientRect().height;
+  if (top + height < 0 || top > taH) return null;
+
+  return { top, height };
+}
+
+// ── EditorPane component (Split View) ──
+function EditorPane({ textareaRef, value, onChange, onScroll, lang, onLangChange, isTranslating, onCopy, onClear, tokens, chars, placeholder, highlight, onMouseMove, onMouseLeave }) {
+
+  const handleScroll = useCallback((e) => {
+    onMouseLeave();
+    onScroll(e);
+  }, [onScroll, onMouseLeave]);
+
+  return (
+    <div className="editor-panel">
+      <div className="panel-header">
+        <div className="panel-lang-row">
+          <select className="lang-select" value={lang} onChange={e => onLangChange(e.target.value)}>
+            {Object.entries(LANGUAGES).map(([code, l]) => (
+              <option key={code} value={code}>{l.flag} {l.name}</option>
+            ))}
+          </select>
+          {isTranslating && (
+            <span className="xlating-pill">
+              <span className="spinner" />
+              翻译中
+            </span>
+          )}
+        </div>
+        <div className="panel-actions">
+          <span className="token-badge" title="字符数 / Token 估算">{chars}字 · ~{tokens}tok</span>
+          <button className="icon-btn" title="复制" onClick={onCopy}><Ic.Copy /></button>
+          <button className="icon-btn" title="清空" onClick={onClear}><Ic.Trash /></button>
+        </div>
+      </div>
+
+      <div className="panel-body">
+        {highlight && (
+          <div
+            className="para-highlight"
+            style={{ top: highlight.top, height: highlight.height }}
+          />
+        )}
+        <textarea
+          ref={textareaRef}
+          className="editor-textarea"
+          value={value}
+          onChange={onChange}
+          onScroll={handleScroll}
+          onMouseMove={onMouseMove}
+          onMouseLeave={onMouseLeave}
+          placeholder={placeholder}
+          spellCheck={false}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ── Auto-resizing textarea for module view ──
+const AutoTextarea = React.forwardRef(function AutoTextarea({ value, onChange, placeholder, className, onScroll, onMouseMove, onMouseLeave }, fwdRef) {
+  const innerRef = useRef(null);
+  const MAX_H = 400;
+
+  // Merge forwarded ref and inner ref
+  useEffect(() => {
+    if (fwdRef) {
+      if (typeof fwdRef === 'function') fwdRef(innerRef.current);
+      else fwdRef.current = innerRef.current;
+    }
+  });
+
+  useEffect(() => {
+    const ta = innerRef.current;
+    if (ta) {
+      ta.style.height = 'auto';
+      const natural = ta.scrollHeight;
+      if (natural <= MAX_H) {
+        ta.style.height = natural + 'px';
+        ta.style.overflowY = 'hidden';
+      } else {
+        ta.style.height = MAX_H + 'px';
+        ta.style.overflowY = 'auto';
+      }
+    }
+  }, [value]);
+
+  return (
+    <textarea
+      ref={innerRef}
+      className={className}
+      value={value}
+      onChange={onChange}
+      onScroll={onScroll}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      placeholder={placeholder}
+      spellCheck={false}
+    />
+  );
+});
+
+// ── ModuleBlock component ──
+function ModuleBlock({ block, leftLang, rightLang, style, apiKey, autoXlate, onUpdate, onDelete, onDuplicate, showToast, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop, isDragOver }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [xlating, setXlating] = useState(null); // null | 'ltr' | 'rtl'
+  const xlTimer = useRef(null);
+  const blockRef = useRef(block);        // always holds latest block
+  const lastEditSide = useRef(null);     // 'left' | 'right' — who typed last
+  blockRef.current = block;
+
+  const leftTok = useMemo(() => countTokens(block.left), [block.left]);
+  const rightTok = useMemo(() => countTokens(block.right), [block.right]);
+
+  const cycleType = () => {
+    const idx = BLOCK_TYPES.findIndex(t => t.id === block.type);
+    const next = BLOCK_TYPES[(idx + 1) % BLOCK_TYPES.length];
+    onUpdate({ ...block, type: next.id });
+  };
+
+  // Use blockRef so the async callback always reads the freshest block
+  const doBlockTranslate = useCallback(async (dir) => {
+    const cur = blockRef.current;
+    const src = dir === 'ltr' ? cur.left : cur.right;
+    const from = dir === 'ltr' ? leftLang : rightLang;
+    const to = dir === 'ltr' ? rightLang : leftLang;
+    if (!src.trim()) return;
+    setXlating(dir);
+    try {
+      const result = await translate(src, from, to, style, apiKey);
+      // Re-read latest block so we never overwrite the side the user just edited
+      const fresh = blockRef.current;
+      onUpdate({ ...fresh, [dir === 'ltr' ? 'right' : 'left']: result });
+    } catch (e) {
+      showToast('⚠ 翻译失败: ' + e.message);
+    } finally {
+      setXlating(null);
+    }
+  }, [leftLang, rightLang, style, apiKey, onUpdate, showToast]);
+
+  // Left edit → only translate left→right, cancel any pending right→left
+  const handleLeftChange = useCallback((e) => {
+    const text = e.target.value;
+    onUpdate({ ...blockRef.current, left: text });
+    lastEditSide.current = 'left';
+    clearTimeout(xlTimer.current);
+    if (autoXlate) {
+      xlTimer.current = setTimeout(() => {
+        if (text.trim() && lastEditSide.current === 'left') doBlockTranslate('ltr');
+      }, 1200);
+    }
+  }, [onUpdate, autoXlate, doBlockTranslate]);
+
+  // Right edit → only translate right→left, cancel any pending left→right
+  const handleRightChange = useCallback((e) => {
+    const text = e.target.value;
+    onUpdate({ ...blockRef.current, right: text });
+    lastEditSide.current = 'right';
+    clearTimeout(xlTimer.current);
+    if (autoXlate) {
+      xlTimer.current = setTimeout(() => {
+        if (text.trim() && lastEditSide.current === 'right') doBlockTranslate('rtl');
+      }, 1200);
+    }
+  }, [onUpdate, autoXlate, doBlockTranslate]);
+
+  useEffect(() => () => clearTimeout(xlTimer.current), []);
+
+  const typeInfo = BLOCK_TYPES.find(t => t.id === block.type) || BLOCK_TYPES[6];
+  const langL = LANGUAGES[leftLang];
+  const langR = LANGUAGES[rightLang];
+
+  const [canDrag, setCanDrag] = useState(false);
+
+  // ── Scroll sync refs ──
+  const leftTaRef = useRef(null);
+  const rightTaRef = useRef(null);
+  const modSyncRef = useRef(false);
+
+  const onLeftTaScroll = useCallback(() => {
+    if (modSyncRef.current || !leftTaRef.current || !rightTaRef.current) return;
+    modSyncRef.current = true;
+    const { scrollTop, scrollHeight, clientHeight } = leftTaRef.current;
+    const ratio = scrollTop / Math.max(1, scrollHeight - clientHeight);
+    rightTaRef.current.scrollTop = ratio * (rightTaRef.current.scrollHeight - rightTaRef.current.clientHeight);
+    requestAnimationFrame(() => { modSyncRef.current = false; });
+  }, []);
+
+  const onRightTaScroll = useCallback(() => {
+    if (modSyncRef.current || !leftTaRef.current || !rightTaRef.current) return;
+    modSyncRef.current = true;
+    const { scrollTop, scrollHeight, clientHeight } = rightTaRef.current;
+    const ratio = scrollTop / Math.max(1, scrollHeight - clientHeight);
+    leftTaRef.current.scrollTop = ratio * (leftTaRef.current.scrollHeight - leftTaRef.current.clientHeight);
+    requestAnimationFrame(() => { modSyncRef.current = false; });
+  }, []);
+
+  // ── Cross-pane paragraph hover highlight ──
+  const MOD_HL_CFG = useMemo(() => ({ fontSize: 13, lineH: 13 * 1.75, padTop: 12, padH: 14 }), []);
+  const [hlLeft, setHlLeft] = useState(null);
+  const [hlRight, setHlRight] = useState(null);
+
+  const syncHighlight = useCallback((side, mouseY) => {
+    const hovTa   = side === 'left' ? leftTaRef.current  : rightTaRef.current;
+    const otherTa = side === 'left' ? rightTaRef.current : leftTaRef.current;
+    const hovVal   = side === 'left' ? blockRef.current.left  : blockRef.current.right;
+    const otherVal = side === 'left' ? blockRef.current.right : blockRef.current.left;
+
+    if (!hovTa) { setHlLeft(null); setHlRight(null); return; }
+
+    // Build paragraph lists for both sides
+    const hovParas   = buildParaList(hovVal, hovTa, MOD_HL_CFG);
+    const otherParas = otherTa ? buildParaList(otherVal, otherTa, MOD_HL_CFG) : [];
+
+    // Find which paragraph index mouse is over on hovered side
+    const idx = findHoveredParaIndex(hovParas, mouseY, hovTa, MOD_HL_CFG);
+    if (idx < 0) {
+      setHlLeft(null); setHlRight(null); return;
+    }
+
+    // Compute highlight for BOTH sides using same paragraph index
+    const hovHl   = paraIndexToHighlight(hovParas, idx, hovTa, MOD_HL_CFG);
+    const otherHl = otherTa ? paraIndexToHighlight(otherParas, idx, otherTa, MOD_HL_CFG) : null;
+
+    if (side === 'left') {
+      setHlLeft(hovHl);
+      setHlRight(otherHl);
+    } else {
+      setHlRight(hovHl);
+      setHlLeft(otherHl);
+    }
+  }, [MOD_HL_CFG]);
+
+  const onLeftMouseMove  = useCallback((e) => syncHighlight('left', e.clientY), [syncHighlight]);
+  const onRightMouseMove = useCallback((e) => syncHighlight('right', e.clientY), [syncHighlight]);
+
+  const clearHighlights = useCallback(() => { setHlLeft(null); setHlRight(null); }, []);
+
+  // Clear highlight on scroll
+  const handleLeftScroll  = useCallback(() => { clearHighlights(); onLeftTaScroll(); }, [clearHighlights, onLeftTaScroll]);
+  const handleRightScroll = useCallback(() => { clearHighlights(); onRightTaScroll(); }, [clearHighlights, onRightTaScroll]);
+
+  return (
+    <div
+      className={`mod-block ${block.enabled === false ? 'disabled' : ''} ${isDragOver ? 'drag-over' : ''}`}
+      draggable={canDrag}
+      onDragStart={onDragStart}
+      onDragEnd={(e) => { setCanDrag(false); onDragEnd(e); }}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
+      {/* Header */}
+      <div className="mod-header">
+        <span
+          className="drag-handle"
+          title="拖拽排序"
+          onMouseDown={() => setCanDrag(true)}
+          onMouseUp={() => setCanDrag(false)}
+        >⠿</span>
+        <span
+          className={`mod-type-badge ${block.type}`}
+          onClick={cycleType}
+          title="点击切换类型"
+        >
+          {typeInfo.emoji} {typeInfo.label}
+        </span>
+        <input
+          className="mod-name-input"
+          value={block.name}
+          onChange={e => onUpdate({ ...block, name: e.target.value })}
+          placeholder="模块名称..."
+        />
+        <button
+          className={`mod-toggle ${block.enabled !== false ? 'on' : ''}`}
+          onClick={() => onUpdate({ ...block, enabled: block.enabled === false ? true : false })}
+          title={block.enabled !== false ? '参与输出（点击关闭）' : '已排除（点击开启）'}
+        />
+        <div className="mod-header-actions">
+          <button className="icon-btn" onClick={() => setCollapsed(c => !c)} title={collapsed ? '展开' : '折叠'}>
+            {collapsed ? <Ic.ChevRight /> : <Ic.ChevDown />}
+          </button>
+          <button className="icon-btn" onClick={() => onDuplicate(block)} title="复制模块">
+            <Ic.Duplicate />
+          </button>
+          <button className="icon-btn" onClick={() => onDelete(block.id)} title="删除模块" style={{color: 'var(--danger)'}}>
+            <Ic.Trash />
+          </button>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className={`mod-body ${collapsed ? 'collapsed' : ''}`}>
+        {/* Left pane */}
+        <div className="mod-pane">
+          <div className="mod-pane-header">
+            <span className="mod-pane-lang">{langL?.flag} {langL?.name}</span>
+            <div className="mod-pane-gap" />
+            <span className="mod-pane-tok">{leftTok} tok</span>
+            {xlating === 'rtl' && <span className="spinner" style={{width:8,height:8}} />}
+          </div>
+          <div className="mod-textarea-wrap">
+            {hlLeft && <div className="mod-para-highlight" style={{ top: hlLeft.top, height: hlLeft.height }} />}
+            <AutoTextarea
+              ref={leftTaRef}
+              className="mod-textarea"
+              value={block.left}
+              onChange={handleLeftChange}
+              onScroll={handleLeftScroll}
+              onMouseMove={onLeftMouseMove}
+              onMouseLeave={clearHighlights}
+              placeholder={`输入 ${langL?.name} 内容...`}
+            />
+          </div>
+        </div>
+
+        {/* Right pane */}
+        <div className="mod-pane">
+          <div className="mod-pane-header">
+            <span className="mod-pane-lang">{langR?.flag} {langR?.name}</span>
+            <div className="mod-pane-gap" />
+            <span className="mod-pane-tok">{rightTok} tok</span>
+            {xlating === 'ltr' && <span className="spinner" style={{width:8,height:8}} />}
+          </div>
+          <div className="mod-textarea-wrap">
+            {hlRight && <div className="mod-para-highlight" style={{ top: hlRight.top, height: hlRight.height }} />}
+            <AutoTextarea
+              ref={rightTaRef}
+              className="mod-textarea"
+              value={block.right}
+              onChange={handleRightChange}
+              onScroll={handleRightScroll}
+              onMouseMove={onRightMouseMove}
+              onMouseLeave={clearHighlights}
+              placeholder={`${langR?.name} translation...`}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      {!collapsed && (
+        <div className="mod-footer">
+          <span className="mod-tok-total">{leftTok + rightTok} tokens</span>
+          <div className="mod-footer-gap" />
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={() => doBlockTranslate('ltr')}
+            disabled={!!xlating}
+          >
+            {xlating === 'ltr' ? <span className="spinner" style={{width:9,height:9}} /> : <Ic.Translate />}
+            &nbsp;{langL?.name} → {langR?.name}
+          </button>
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={() => doBlockTranslate('rtl')}
+            disabled={!!xlating}
+          >
+            {xlating === 'rtl' ? <span className="spinner" style={{width:9,height:9}} /> : <Ic.Translate />}
+            &nbsp;{langR?.name} → {langL?.name}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Compile Modal ──
+function CompileModal({ blocks, leftLang, rightLang, onClose, showToast }) {
+  const [tab, setTab] = useState('left');
+  const langL = LANGUAGES[leftLang];
+  const langR = LANGUAGES[rightLang];
+
+  const content = useMemo(() => {
+    const enabled = blocks.filter(b => b.enabled !== false);
+    if (tab === 'left') {
+      return enabled.map(b => b.left.trim()).filter(Boolean).join('\n\n');
+    }
+    if (tab === 'right') {
+      return enabled.map(b => b.right.trim()).filter(Boolean).join('\n\n');
+    }
+    // merged
+    return enabled.map(b => {
+      const parts = [];
+      if (b.left.trim()) parts.push(b.left.trim());
+      if (b.right.trim()) parts.push(b.right.trim());
+      return parts.join('\n\n');
+    }).filter(Boolean).join('\n\n---\n\n');
+  }, [tab, blocks]);
+
+  const totalTok = useMemo(() => countTokens(content), [content]);
+
+  const doCopy = () => {
+    navigator.clipboard.writeText(content).then(() => showToast('✓ 已复制编译后的 Prompt'));
+  };
+
+  const doExport = (ext) => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], { type: 'text/plain' }));
+    a.download = `biprompt-compiled.${ext}`;
+    a.click();
+    showToast(`✓ 已导出 .${ext}`);
+  };
+
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ width: 600 }}>
+        <div className="modal-header">
+          <div className="modal-icon">📦</div>
+          <div>
+            <div className="modal-title">编译 Prompt</div>
+            <div className="modal-subtitle">将所有启用的模块合并为完整 Prompt · {totalTok} tokens</div>
+          </div>
+        </div>
+        <div className="modal-body">
+          <div className="compile-tabs">
+            <button className={`compile-tab ${tab === 'left' ? 'active' : ''}`} onClick={() => setTab('left')}>
+              {langL?.flag} {langL?.name}
+            </button>
+            <button className={`compile-tab ${tab === 'right' ? 'active' : ''}`} onClick={() => setTab('right')}>
+              {langR?.flag} {langR?.name}
+            </button>
+            <button className={`compile-tab ${tab === 'merged' ? 'active' : ''}`} onClick={() => setTab('merged')}>
+              🔗 双语合并
+            </button>
+          </div>
+          <textarea className="compile-output" value={content} readOnly />
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={() => doExport('txt')}>
+            <Ic.Download />&nbsp;TXT
+          </button>
+          <button className="btn btn-ghost" onClick={() => doExport('md')}>
+            <Ic.Download />&nbsp;MD
+          </button>
+          <button className="btn btn-primary" onClick={doCopy}>
+            <Ic.Copy />&nbsp;复制 Prompt
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── localStorage helpers ──
+const STORAGE_KEY = 'biprompt_state';
+const HISTORY_KEY = 'biprompt_history';
+
+function loadSaved() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+const _defaultBlocks = () => [
+  { id: newBlockId(), type: 'role',     name: '角色设定',  left: '', right: '', enabled: true },
+  { id: newBlockId(), type: 'context',  name: '背景信息',  left: '', right: '', enabled: true },
+  { id: newBlockId(), type: 'rules',    name: '规则约束',  left: '', right: '', enabled: true },
+  { id: newBlockId(), type: 'output',   name: '输出格式',  left: '', right: '', enabled: true },
+];
+
+// ── Main App ──
+function App() {
+  const saved = useMemo(() => loadSaved(), []);
+
+  // ── View mode ──
+  const [viewMode, setViewMode] = useState(saved?.viewMode || 'split');
+
+  // ── Split view state ──
+  const [leftText, setLeftText] = useState(saved?.leftText || '');
+  const [rightText, setRightText] = useState(saved?.rightText || '');
+  const [leftLang, setLeftLang] = useState(saved?.leftLang || 'zh');
+  const [rightLang, setRightLang] = useState(saved?.rightLang || 'en');
+  const [xlatingLeft, setXlatingLeft] = useState(false);
+  const [xlatingRight, setXlatingRight] = useState(false);
+  const [xlError, setXlError] = useState(null);
+
+  // ── Settings ──
+  const [engine, setEngine] = useState(saved?.engine || 'demo');
+  const [style, setStyle] = useState(saved?.style || 'balanced');
+  const [apiKey, setApiKey] = useState(saved?.apiKey || '');
+  const [apiKeyDraft, setApiKeyDraft] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+  const [engineDraft, setEngineDraft] = useState(saved?.engine || 'demo');
+  const [styleDraft, setStyleDraft] = useState(saved?.style || 'balanced');
+
+  // ── UI state ──
+  const [autoXlate, setAutoXlate] = useState(saved?.autoXlate !== undefined ? saved.autoXlate : true);
+  const [sidePanel, setSidePanel] = useState('templates');
+  const [toast, setToast] = useState({ msg: '', visible: false });
+  const [history, setHistory] = useState(() => loadHistory());
+  const [lastEdited, setLastEdited] = useState(null);
+
+  // ── Module view state ──
+  const [blocks, setBlocks] = useState(saved?.blocks || _defaultBlocks());
+  const [showCompile, setShowCompile] = useState(false);
+  const [dragId, setDragId] = useState(null);
+  const [dragOverId, setDragOverId] = useState(null);
+
+  const leftRef = useRef(null);
+  const rightRef = useRef(null);
+  const syncRef = useRef(false);
+  const leftTimer = useRef(null);
+  const rightTimer = useRef(null);
+  const toastTimer = useRef(null);
+
+  // ── Auto-save to localStorage (debounced) ──
+  const saveTimer = useRef(null);
+  useEffect(() => {
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          viewMode, leftText, rightText, leftLang, rightLang,
+          engine, style, apiKey, autoXlate, blocks,
+        }));
+      } catch(e) {}
+    }, 600);
+    return () => clearTimeout(saveTimer.current);
+  }, [viewMode, leftText, rightText, leftLang, rightLang, engine, style, apiKey, autoXlate, blocks]);
+
+  // Persist history separately
+  useEffect(() => {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch(e) {}
+  }, [history]);
+
+  // ── Toast ──
+  const showToast = useCallback((msg) => {
+    setToast({ msg, visible: true });
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 2200);
+  }, []);
+
+  // ── Scroll sync ──
+  const onLeftScroll = useCallback(() => {
+    if (syncRef.current || !leftRef.current || !rightRef.current) return;
+    syncRef.current = true;
+    const { scrollTop, scrollHeight, clientHeight } = leftRef.current;
+    const ratio = scrollTop / Math.max(1, scrollHeight - clientHeight);
+    rightRef.current.scrollTop = ratio * (rightRef.current.scrollHeight - rightRef.current.clientHeight);
+    requestAnimationFrame(() => { syncRef.current = false; });
+  }, []);
+
+  const onRightScroll = useCallback(() => {
+    if (syncRef.current || !leftRef.current || !rightRef.current) return;
+    syncRef.current = true;
+    const { scrollTop, scrollHeight, clientHeight } = rightRef.current;
+    const ratio = scrollTop / Math.max(1, scrollHeight - clientHeight);
+    leftRef.current.scrollTop = ratio * (leftRef.current.scrollHeight - leftRef.current.clientHeight);
+    requestAnimationFrame(() => { syncRef.current = false; });
+  }, []);
+
+  // ── Cross-pane paragraph highlight (split view) ──
+  const SPLIT_HL_CFG = useMemo(() => ({ fontSize: EDITOR_FONT_SIZE, lineH: EDITOR_LINE_H, padTop: EDITOR_PAD_TOP, padH: EDITOR_PAD_H }), []);
+  const [splitHlLeft, setSplitHlLeft] = useState(null);
+  const [splitHlRight, setSplitHlRight] = useState(null);
+
+  const syncSplitHighlight = useCallback((side, mouseY) => {
+    const hovTa   = side === 'left' ? leftRef.current  : rightRef.current;
+    const otherTa = side === 'left' ? rightRef.current : leftRef.current;
+    const hovVal   = side === 'left' ? leftText  : rightText;
+    const otherVal = side === 'left' ? rightText : leftText;
+
+    if (!hovTa) { setSplitHlLeft(null); setSplitHlRight(null); return; }
+
+    const hovParas   = buildParaList(hovVal, hovTa, SPLIT_HL_CFG);
+    const otherParas = otherTa ? buildParaList(otherVal, otherTa, SPLIT_HL_CFG) : [];
+
+    const idx = findHoveredParaIndex(hovParas, mouseY, hovTa, SPLIT_HL_CFG);
+    if (idx < 0) { setSplitHlLeft(null); setSplitHlRight(null); return; }
+
+    const hovHl   = paraIndexToHighlight(hovParas, idx, hovTa, SPLIT_HL_CFG);
+    const otherHl = otherTa ? paraIndexToHighlight(otherParas, idx, otherTa, SPLIT_HL_CFG) : null;
+
+    if (side === 'left') {
+      setSplitHlLeft(hovHl);
+      setSplitHlRight(otherHl);
+    } else {
+      setSplitHlRight(hovHl);
+      setSplitHlLeft(otherHl);
+    }
+  }, [SPLIT_HL_CFG, leftText, rightText]);
+
+  const onSplitLeftMouseMove  = useCallback((e) => syncSplitHighlight('left', e.clientY), [syncSplitHighlight]);
+  const onSplitRightMouseMove = useCallback((e) => syncSplitHighlight('right', e.clientY), [syncSplitHighlight]);
+  const clearSplitHighlights  = useCallback(() => { setSplitHlLeft(null); setSplitHlRight(null); }, []);
+
+  // ── Translation logic ──
+  const doTranslate = useCallback(async (text, from, to, target) => {
+    if (!text.trim()) {
+      if (target === 'right') setRightText('');
+      else setLeftText('');
+      return;
+    }
+    setXlError(null);
+    if (target === 'right') setXlatingRight(true);
+    else setXlatingLeft(true);
+    try {
+      const result = await translate(text, from, to, style, apiKey);
+      if (target === 'right') setRightText(result);
+      else setLeftText(result);
+    } catch (err) {
+      setXlError(err.message);
+      showToast('⚠ 翻译失败：' + err.message);
+    } finally {
+      if (target === 'right') setXlatingRight(false);
+      else setXlatingLeft(false);
+    }
+  }, [style, apiKey, showToast]);
+
+  const handleLeftChange = useCallback((e) => {
+    const text = e.target.value;
+    setLeftText(text);
+    setLastEdited('left');
+    if (!autoXlate) return;
+    clearTimeout(leftTimer.current);
+    leftTimer.current = setTimeout(() => doTranslate(text, leftLang, rightLang, 'right'), 900);
+  }, [autoXlate, leftLang, rightLang, doTranslate]);
+
+  const handleRightChange = useCallback((e) => {
+    const text = e.target.value;
+    setRightText(text);
+    setLastEdited('right');
+    if (!autoXlate) return;
+    clearTimeout(rightTimer.current);
+    rightTimer.current = setTimeout(() => doTranslate(text, rightLang, leftLang, 'left'), 900);
+  }, [autoXlate, rightLang, leftLang, doTranslate]);
+
+  // Re-translate when language changes
+  useEffect(() => {
+    if (!autoXlate || !leftText) return;
+    const timer = setTimeout(() => doTranslate(leftText, leftLang, rightLang, 'right'), 400);
+    return () => clearTimeout(timer);
+  }, [leftLang, rightLang]);
+
+  // ── Actions ──
+  const copy = useCallback((text, label) => {
+    navigator.clipboard.writeText(text).then(() => showToast(`✓ ${label}已复制`));
+  }, [showToast]);
+
+  const copyMerged = useCallback(() => {
+    const l = LANGUAGES[leftLang], r = LANGUAGES[rightLang];
+    const merged = `# ${l.flag} ${l.name}\n\n${leftText}\n\n---\n\n# ${r.flag} ${r.name}\n\n${rightText}`;
+    navigator.clipboard.writeText(merged).then(() => showToast('✓ 双语内容已合并复制'));
+  }, [leftText, rightText, leftLang, rightLang, showToast]);
+
+  const exportFile = useCallback((fmt) => {
+    const l = LANGUAGES[leftLang], r = LANGUAGES[rightLang];
+    let content, name, type;
+    if (fmt === 'md') {
+      content = `# ${l.flag} ${l.name}\n\n${leftText}\n\n---\n\n# ${r.flag} ${r.name}\n\n${rightText}`;
+      name = 'biprompt-export.md'; type = 'text/markdown';
+    } else {
+      content = `${l.flag} ${l.name}\n${'─'.repeat(50)}\n${leftText}\n\n\n${r.flag} ${r.name}\n${'─'.repeat(50)}\n${rightText}`;
+      name = 'biprompt-export.txt'; type = 'text/plain';
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], { type }));
+    a.download = name;
+    a.click();
+    showToast(`✓ 已导出 ${name}`);
+  }, [leftText, rightText, leftLang, rightLang, showToast]);
+
+  const loadTemplate = useCallback((t) => {
+    setLeftLang('zh'); setRightLang('en');
+    setLeftText(t.zh); setRightText(t.en);
+    showToast(`✓ 已加载：${t.name}`);
+  }, [showToast]);
+
+  const swapPanels = useCallback(() => {
+    const tmpText = leftText, tmpLang = leftLang;
+    setLeftText(rightText); setLeftLang(rightLang);
+    setRightText(tmpText); setRightLang(tmpLang);
+    showToast('↔ 已交换');
+  }, [leftText, rightText, leftLang, rightLang, showToast]);
+
+  const saveSnapshot = useCallback(() => {
+    if (viewMode === 'split') {
+      if (!leftText && !rightText) { showToast('⚠ 内容为空'); return; }
+      const snap = { id: Date.now(), ts: new Date().toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }), leftText, rightText, leftLang, rightLang, preview: (leftText || rightText).slice(0, 40), mode: 'split' };
+      setHistory(h => [snap, ...h.slice(0, 19)]);
+    } else {
+      const hasContent = blocks.some(b => b.left.trim() || b.right.trim());
+      if (!hasContent) { showToast('⚠ 内容为空'); return; }
+      const snap = { id: Date.now(), ts: new Date().toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }), blocks: JSON.parse(JSON.stringify(blocks)), leftLang, rightLang, preview: blocks.find(b => b.left.trim())?.left.slice(0, 40) || '(模块)', mode: 'modules' };
+      setHistory(h => [snap, ...h.slice(0, 19)]);
+    }
+    showToast('✓ 快照已保存');
+  }, [viewMode, leftText, rightText, leftLang, rightLang, blocks, showToast]);
+
+  const loadSnapshot = useCallback((snap) => {
+    if (snap.mode === 'modules' && snap.blocks) {
+      setBlocks(snap.blocks);
+      setViewMode('modules');
+    } else {
+      setLeftText(snap.leftText || ''); setRightText(snap.rightText || '');
+      setViewMode('split');
+    }
+    setLeftLang(snap.leftLang); setRightLang(snap.rightLang);
+    showToast('✓ 已恢复快照');
+  }, [showToast]);
+
+  // ── File export / import (JSON full backup) ──
+  const exportJSON = useCallback(() => {
+    const data = {
+      _biprompt: 1,
+      viewMode, leftText, rightText, leftLang, rightLang,
+      engine, style, apiKey, autoXlate, blocks, history,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `biprompt-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✓ 已导出文件');
+  }, [viewMode, leftText, rightText, leftLang, rightLang, engine, style, apiKey, autoXlate, blocks, history, showToast]);
+
+  const importFile = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          if (!data._biprompt) { showToast('⚠ 不是有效的 BiPrompt 文件'); return; }
+          if (data.leftText !== undefined) setLeftText(data.leftText);
+          if (data.rightText !== undefined) setRightText(data.rightText);
+          if (data.leftLang) setLeftLang(data.leftLang);
+          if (data.rightLang) setRightLang(data.rightLang);
+          if (data.engine) { setEngine(data.engine); setEngineDraft(data.engine); }
+          if (data.style) { setStyle(data.style); setStyleDraft(data.style); }
+          if (data.apiKey) { setApiKey(data.apiKey); setApiKeyDraft(data.apiKey); }
+          if (data.autoXlate !== undefined) setAutoXlate(data.autoXlate);
+          if (data.blocks) setBlocks(data.blocks);
+          if (data.history) setHistory(data.history);
+          if (data.viewMode) setViewMode(data.viewMode);
+          showToast('✓ 已导入文件');
+        } catch(e) { showToast('⚠ 文件解析失败'); }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }, [showToast]);
+
+  const manualTranslate = useCallback(() => {
+    if (lastEdited === 'right') doTranslate(rightText, rightLang, leftLang, 'left');
+    else doTranslate(leftText, leftLang, rightLang, 'right');
+  }, [lastEdited, leftText, rightText, leftLang, rightLang, doTranslate]);
+
+  const openSettings = useCallback(() => {
+    setApiKeyDraft(apiKey);
+    setEngineDraft(engine);
+    setStyleDraft(style);
+    setShowSettings(true);
+  }, [apiKey, engine, style]);
+
+  const saveSettings = useCallback(() => {
+    setApiKey(apiKeyDraft);
+    setEngine(apiKeyDraft ? 'claude' : 'demo');
+    setStyle(styleDraft);
+    setShowSettings(false);
+    showToast('✓ 设置已保存');
+  }, [apiKeyDraft, styleDraft, showToast]);
+
+  // ── Module actions ──
+  const addBlock = useCallback((type = 'custom') => {
+    const typeInfo = BLOCK_TYPES.find(t => t.id === type) || BLOCK_TYPES[6];
+    const defaultNames = { role: '角色设定', context: '背景信息', rules: '规则约束', skills: '技能池', output: '输出格式', examples: '示例', custom: '自定义模块' };
+    setBlocks(bs => [...bs, {
+      id: newBlockId(),
+      type,
+      name: defaultNames[type] || '自定义模块',
+      left: '',
+      right: '',
+      enabled: true,
+    }]);
+    showToast(`✓ 已添加 ${typeInfo.label} 模块`);
+  }, [showToast]);
+
+  const updateBlock = useCallback((updated) => {
+    setBlocks(bs => bs.map(b => b.id === updated.id ? updated : b));
+  }, []);
+
+  const deleteBlock = useCallback((id) => {
+    setBlocks(bs => bs.filter(b => b.id !== id));
+    showToast('✓ 模块已删除');
+  }, [showToast]);
+
+  const duplicateBlock = useCallback((block) => {
+    setBlocks(bs => {
+      const idx = bs.findIndex(b => b.id === block.id);
+      const dup = { ...block, id: newBlockId(), name: block.name + ' (副本)' };
+      const next = [...bs];
+      next.splice(idx + 1, 0, dup);
+      return next;
+    });
+    showToast('✓ 模块已复制');
+  }, [showToast]);
+
+  // ── Drag and drop ──
+  const handleDragStart = useCallback((id) => {
+    setDragId(id);
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setDragId(null);
+    setDragOverId(null);
+  }, []);
+
+  const handleDragOver = useCallback((id, e) => {
+    e.preventDefault();
+    setDragOverId(id);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverId(null);
+  }, []);
+
+  const handleDrop = useCallback((targetId) => {
+    if (!dragId || dragId === targetId) { setDragId(null); setDragOverId(null); return; }
+    setBlocks(bs => {
+      const fromIdx = bs.findIndex(b => b.id === dragId);
+      const toIdx = bs.findIndex(b => b.id === targetId);
+      if (fromIdx < 0 || toIdx < 0) return bs;
+      const next = [...bs];
+      const [moved] = next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, moved);
+      return next;
+    });
+    setDragId(null);
+    setDragOverId(null);
+  }, [dragId]);
+
+  // ── Derived ──
+  const leftTokens = useMemo(() => countTokens(leftText), [leftText]);
+  const rightTokens = useMemo(() => countTokens(rightText), [rightText]);
+  const leftChars = useMemo(() => countChars(leftText), [leftText]);
+  const rightChars = useMemo(() => countChars(rightText), [rightText]);
+
+  const moduleTotalTok = useMemo(() => {
+    return blocks.filter(b => b.enabled !== false).reduce((sum, b) => sum + countTokens(b.left) + countTokens(b.right), 0);
+  }, [blocks]);
+
+  const togglePanel = (name) => setSidePanel(p => p === name ? null : name);
+
+  return (
+    <div className="app">
+
+      {/* ── Header ── */}
+      <header className="header">
+        <div className="logo">
+          <div className="logo-mark">Bi</div>
+          <span className="logo-name">BiPrompt</span>
+          <span className="logo-tag">双语编辑器</span>
+        </div>
+
+        <div className="header-center">
+          <div className="view-tabs">
+            <button className={`view-tab ${viewMode === 'split' ? 'active' : ''}`} onClick={() => setViewMode('split')}>
+              双栏编辑
+            </button>
+            <button className={`view-tab ${viewMode === 'modules' ? 'active' : ''}`} onClick={() => setViewMode('modules')}>
+              模块化
+            </button>
+          </div>
+        </div>
+
+        <div className="header-right">
+          <button className="btn btn-ghost" onClick={() => togglePanel('history')}>
+            <Ic.History />&nbsp;历史
+          </button>
+          <button className="btn btn-ghost" onClick={() => togglePanel('templates')}>
+            <Ic.Template />&nbsp;模板
+          </button>
+          <button className="btn btn-ghost" onClick={saveSnapshot}>
+            <Ic.Save />&nbsp;快照
+          </button>
+          <button className="btn btn-subtle" onClick={openSettings}>
+            <Ic.Settings />&nbsp;设置
+          </button>
+          {apiKey
+            ? <span className="api-status connected">● Claude AI 已连接</span>
+            : <span className="api-status demo">● 演示模式</span>
+          }
+        </div>
+      </header>
+
+      {/* ── Toolbar (Split View) ── */}
+      {viewMode === 'split' && (
+        <div className="toolbar">
+          <div className="tb-group">
+            <span className="tb-label">翻译</span>
+            <div className="toggle-pill">
+              <button className={`toggle-opt ${autoXlate ? 'active' : ''}`} onClick={() => setAutoXlate(true)}>自动</button>
+              <button className={`toggle-opt ${!autoXlate ? 'active' : ''}`} onClick={() => setAutoXlate(false)}>手动</button>
+            </div>
+            {!autoXlate && (
+              <button className="btn btn-primary" onClick={manualTranslate}>
+                翻译 →
+              </button>
+            )}
+          </div>
+
+          <div className="tb-sep" />
+
+          <div className="tb-group">
+            <span className="tb-label">风格</span>
+            <select value={style} onChange={e => setStyle(e.target.value)}>
+              <option value="formal">正式</option>
+              <option value="balanced">均衡</option>
+              <option value="casual">口语</option>
+            </select>
+          </div>
+
+          <div className="tb-sep" />
+
+          <div className="tb-group">
+            <span className="tb-label">引擎</span>
+            <select value={engine} onChange={e => setEngine(e.target.value)}>
+              <option value="demo">演示模式</option>
+              <option value="claude">Claude AI</option>
+            </select>
+          </div>
+
+          <div className="tb-spacer" />
+
+          <div className="tb-group">
+            <button className="btn btn-ghost" onClick={() => exportFile('txt')}>
+              <Ic.Download />&nbsp;TXT
+            </button>
+            <button className="btn btn-ghost" onClick={() => exportFile('md')}>
+              <Ic.Download />&nbsp;MD
+            </button>
+            <button className="btn btn-outline" onClick={copyMerged}>
+              <Ic.CopyMerge />&nbsp;复制双语
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Editor Area ── */}
+      <div className="editor-area" style={{ display: viewMode === 'split' ? 'flex' : 'none' }}>
+
+        {/* Left Panel */}
+        <EditorPane
+          textareaRef={leftRef}
+          value={leftText}
+          onChange={handleLeftChange}
+          onScroll={onLeftScroll}
+          lang={leftLang}
+          onLangChange={setLeftLang}
+          isTranslating={xlatingLeft}
+          onCopy={() => copy(leftText, '左侧内容')}
+          onClear={() => setLeftText('')}
+          tokens={leftTokens}
+          chars={leftChars}
+          placeholder={"在此输入" + (LANGUAGES[leftLang]?.name || '') + "内容...\n\n支持 Markdown 格式 · 编辑后自动翻译到右侧\n点击右上角「模板」快速开始 →"}
+          highlight={splitHlLeft}
+          onMouseMove={onSplitLeftMouseMove}
+          onMouseLeave={clearSplitHighlights}
+        />
+
+        {/* Swap Zone */}
+        <div className="swap-zone">
+          <div className="swap-line" />
+          <button className="swap-btn" onClick={swapPanels} title="交换两侧内容与语言">
+            <Ic.Swap />
+          </button>
+          <div className="swap-line" />
+        </div>
+
+        {/* Right Panel */}
+        <EditorPane
+          textareaRef={rightRef}
+          value={rightText}
+          onChange={handleRightChange}
+          onScroll={onRightScroll}
+          lang={rightLang}
+          onLangChange={setRightLang}
+          isTranslating={xlatingRight}
+          onCopy={() => copy(rightText, '右侧内容')}
+          onClear={() => setRightText('')}
+          tokens={rightTokens}
+          chars={rightChars}
+          placeholder={"Translation will appear here (" + (LANGUAGES[rightLang]?.name || '') + ")...\n\nMarkdown supported · Edit here to translate back to the left\nOr load a template from the Templates panel →"}
+          highlight={splitHlRight}
+          onMouseMove={onSplitRightMouseMove}
+          onMouseLeave={clearSplitHighlights}
+        />
+
+        {/* Templates Side Panel */}
+        {sidePanel === 'templates' && (
+          <div className="side-panel">
+            <div className="side-panel-header">
+              <span className="side-panel-title">Prompt 模板</span>
+              <button className="icon-btn" onClick={() => setSidePanel(null)}><Ic.X /></button>
+            </div>
+            <div className="side-panel-list">
+              {TEMPLATES.map(t => (
+                <div key={t.id} className="template-card" onClick={() => loadTemplate(t)}>
+                  <div className="template-card-name">{t.name}</div>
+                  <div className="template-card-desc">{t.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* History Side Panel */}
+        {sidePanel === 'history' && (
+          <div className="side-panel">
+            <div className="side-panel-header">
+              <span className="side-panel-title">快照历史</span>
+              <button className="icon-btn" onClick={() => setSidePanel(null)}><Ic.X /></button>
+            </div>
+            <div className="side-panel-actions" style={{ display:'flex', gap:6, padding:'6px 12px', borderBottom:'1px solid var(--border-subtle)' }}>
+              <button className="btn btn-ghost btn-sm" style={{flex:1}} onClick={exportJSON}>
+                <Ic.Download /> 导出 JSON
+              </button>
+              <button className="btn btn-ghost btn-sm" style={{flex:1}} onClick={importFile}>
+                <Ic.Link /> 导入 JSON
+              </button>
+            </div>
+            <div className="side-panel-list">
+              {history.length === 0 ? (
+                <div className="empty-state">暂无历史快照<br/>点击顶部「快照」<br/>保存当前内容<br/><br/><span style={{fontSize:11,color:'var(--text-tertiary)'}}>内容已自动保存<br/>刷新不会丢失</span></div>
+              ) : history.map(snap => (
+                <div key={snap.id} className="history-card" onClick={() => loadSnapshot(snap)}>
+                  <div className="history-time">
+                    {snap.ts} · {snap.mode === 'modules' ? '' : ''} {LANGUAGES[snap.leftLang]?.flag}{LANGUAGES[snap.rightLang]?.flag}
+                  </div>
+                  <div className="history-preview">{snap.preview || '(空)'}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* ══════════════════════════════════
+          MODULE VIEW
+         ══════════════════════════════════ */}
+      {viewMode === 'modules' && (
+        <div className="module-view">
+
+          {/* Module Toolbar */}
+          <div className="module-toolbar">
+            <div className="tb-group">
+              <span className="tb-label">语言</span>
+              <select className="lang-select" value={leftLang} onChange={e => setLeftLang(e.target.value)}>
+                {Object.entries(LANGUAGES).map(([code, l]) => (
+                  <option key={code} value={code}>{l.flag} {l.name}</option>
+                ))}
+              </select>
+              <span style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>⇄</span>
+              <select className="lang-select" value={rightLang} onChange={e => setRightLang(e.target.value)}>
+                {Object.entries(LANGUAGES).map(([code, l]) => (
+                  <option key={code} value={code}>{l.flag} {l.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="tb-sep" />
+
+            <div className="tb-group">
+              <span className="tb-label">翻译</span>
+              <div className="toggle-pill">
+                <button className={`toggle-opt ${autoXlate ? 'active' : ''}`} onClick={() => setAutoXlate(true)}>自动</button>
+                <button className={`toggle-opt ${!autoXlate ? 'active' : ''}`} onClick={() => setAutoXlate(false)}>手动</button>
+              </div>
+            </div>
+
+            <div className="tb-sep" />
+
+            <div className="tb-group">
+              <span className="tb-label">风格</span>
+              <select value={style} onChange={e => setStyle(e.target.value)}>
+                <option value="formal">正式</option>
+                <option value="balanced">均衡</option>
+                <option value="casual">口语</option>
+              </select>
+            </div>
+
+            <div className="tb-sep" />
+
+            <div className="tb-group">
+              <span className="tb-label">添加</span>
+              <select
+                value=""
+                onChange={e => { if (e.target.value) addBlock(e.target.value); e.target.value = ''; }}
+                style={{ color: e => e === '' ? 'var(--text-tertiary)' : undefined }}
+              >
+                <option value="" disabled>+ 选择模块类型</option>
+                {BLOCK_TYPES.map(t => (
+                  <option key={t.id} value={t.id}>{t.emoji} {t.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="module-toolbar-gap" />
+
+            <span className="token-badge" title="总 token 数">
+              🔢 启用模块 {blocks.filter(b => b.enabled !== false).length}/{blocks.length} · ~{moduleTotalTok} tok
+            </span>
+
+            <button className="btn btn-primary" onClick={() => setShowCompile(true)}>
+              <Ic.Compile />&nbsp;编译 Prompt
+            </button>
+          </div>
+
+          {/* Module content row: scroll area + optional side panel */}
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+            {/* Module Blocks */}
+            <div className="module-scroll">
+              {blocks.length === 0 ? (
+                <div className="mod-empty">
+                  <div className="mod-empty-icon">🧩</div>
+                  <div className="mod-empty-text">
+                    还没有模块<br/>
+                    从上方工具栏选择类型添加第一个模块
+                  </div>
+                  <button className="btn btn-primary" onClick={() => addBlock('role')}>
+                    <Ic.Plus />&nbsp;添加角色模块
+                  </button>
+                </div>
+              ) : (
+                blocks.map(block => (
+                  <ModuleBlock
+                    key={block.id}
+                    block={block}
+                    leftLang={leftLang}
+                    rightLang={rightLang}
+                    style={style}
+                    apiKey={apiKey}
+                    autoXlate={autoXlate}
+                    onUpdate={updateBlock}
+                    onDelete={deleteBlock}
+                    onDuplicate={duplicateBlock}
+                    showToast={showToast}
+                    isDragOver={dragOverId === block.id}
+                    onDragStart={() => handleDragStart(block.id)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => handleDragOver(block.id, e)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={() => handleDrop(block.id)}
+                  />
+                ))
+              )}
+            </div>
+
+            {/* Side panels in module view */}
+            {sidePanel === 'templates' && (
+              <div className="side-panel">
+                <div className="side-panel-header">
+                  <span className="side-panel-title">Prompt 模板</span>
+                  <button className="icon-btn" onClick={() => setSidePanel(null)}><Ic.X /></button>
+                </div>
+                <div className="side-panel-list">
+                  {TEMPLATES.map(t => (
+                    <div key={t.id} className="template-card" onClick={() => loadTemplate(t)}>
+                      <div className="template-card-name">{t.name}</div>
+                      <div className="template-card-desc">{t.desc}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {sidePanel === 'history' && (
+              <div className="side-panel">
+                <div className="side-panel-header">
+                  <span className="side-panel-title">快照历史</span>
+                  <button className="icon-btn" onClick={() => setSidePanel(null)}><Ic.X /></button>
+                </div>
+                <div className="side-panel-actions" style={{ display:'flex', gap:6, padding:'6px 12px', borderBottom:'1px solid var(--border-subtle)' }}>
+                  <button className="btn btn-ghost btn-sm" style={{flex:1}} onClick={exportJSON}>
+                    <Ic.Download /> 导出 JSON
+                  </button>
+                  <button className="btn btn-ghost btn-sm" style={{flex:1}} onClick={importFile}>
+                    <Ic.Link /> 导入 JSON
+                  </button>
+                </div>
+                <div className="side-panel-list">
+                  {history.length === 0 ? (
+                    <div className="empty-state">暂无历史快照<br/>点击顶部「快照」<br/>保存当前内容<br/><br/><span style={{fontSize:11,color:'var(--text-tertiary)'}}>内容已自动保存<br/>刷新不会丢失</span></div>
+                  ) : history.map(snap => (
+                    <div key={snap.id} className="history-card" onClick={() => loadSnapshot(snap)}>
+                      <div className="history-time">
+                        {snap.ts} · {snap.mode === 'modules' ? '' : ''} {LANGUAGES[snap.leftLang]?.flag}{LANGUAGES[snap.rightLang]?.flag}
+                      </div>
+                      <div className="history-preview">{snap.preview || '(空)'}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Status Bar ── */}
+      <div className="status-bar">
+        <div className="status-group">
+          <div className="status-chip">
+            <span className={`status-dot ${apiKey ? '' : 'warn'}`} />
+            {apiKey ? 'Claude AI 已就绪' : '演示模式（未配置 API Key）'}
+          </div>
+          <div className="status-chip" style={{ color: 'var(--text-tertiary)' }}>
+            {viewMode === 'split' ? '双栏编辑' : `模块化 · ${blocks.length} 个模块`}
+          </div>
+          {xlError && (
+            <div className="status-chip" style={{ color: 'var(--danger)' }}>
+              ⚠ {xlError}
+            </div>
+          )}
+        </div>
+        <div className="status-group">
+          {viewMode === 'split' ? (
+            <>
+              <div className="status-chip">
+                {LANGUAGES[leftLang]?.flag} {leftChars} chars · {leftTokens} tokens
+              </div>
+              <div className="status-chip" style={{ color: 'var(--border)' }}>|</div>
+              <div className="status-chip">
+                {LANGUAGES[rightLang]?.flag} {rightChars} chars · {rightTokens} tokens
+              </div>
+            </>
+          ) : (
+            <div className="status-chip">
+              🔢 ~{moduleTotalTok} tokens (启用模块)
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Settings Modal ── */}
+      {showSettings && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowSettings(false)}>
+          <div className="modal">
+            <div className="modal-header">
+              <div className="modal-icon">⚙</div>
+              <div>
+                <div className="modal-title">翻译设置</div>
+                <div className="modal-subtitle">配置 API Key 以启用真实 AI 翻译</div>
+              </div>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label className="form-label">Claude API Key</label>
+                <input
+                  className="form-input"
+                  type="password"
+                  placeholder="sk-ant-api..."
+                  value={apiKeyDraft}
+                  onChange={e => setApiKeyDraft(e.target.value)}
+                />
+                <div className="form-hint">
+                  API Key 仅保存在本地浏览器中，不会上传到任何服务器。<br />
+                  <a href="https://console.anthropic.com/settings/keys" target="_blank">
+                    获取 API Key <Ic.Link />
+                  </a>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">翻译风格</label>
+                <select className="form-select-full" value={styleDraft} onChange={e => setStyleDraft(e.target.value)}>
+                  <option value="formal">正式 — 专业书面语，适合技术文档</option>
+                  <option value="balanced">均衡 — 自然流畅，适合通用场景（推荐）</option>
+                  <option value="casual">口语 — 轻松对话体，适合聊天 Prompt</option>
+                </select>
+              </div>
+
+              <div className="info-box">
+                💡 当前使用 <strong>claude-haiku-4-5</strong> 进行翻译，速度快、成本低，适合实时翻译场景。翻译质量与速度可根据需求调整模型。
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-ghost" onClick={() => setShowSettings(false)}>取消</button>
+              <button className="btn btn-primary" onClick={saveSettings}>保存设置</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Compile Modal ── */}
+      {showCompile && (
+        <CompileModal
+          blocks={blocks}
+          leftLang={leftLang}
+          rightLang={rightLang}
+          onClose={() => setShowCompile(false)}
+          showToast={showToast}
+        />
+      )}
+
+      {/* ── Toast ── */}
+      <div className={`toast ${toast.visible ? 'visible' : ''}`}>{toast.msg}</div>
+
+    </div>
+  );
+}
+
+try {
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+} catch(e) {
+  document.getElementById('root').innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;color:#ef4444;flex-direction:column;gap:12px;padding:40px;text-align:center">' +
+    '<div style="font-size:20px;font-weight:700">⚠ 渲染出错</div>' +
+    '<pre style="font-size:12px;color:#666;background:#f5f5f5;padding:16px;border-radius:8px;max-width:600px;overflow:auto;text-align:left">' + e.message + '</pre>' +
+    '<button onclick="location.reload()" style="margin-top:12px;padding:8px 24px;background:#6366f1;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px">重新加载</button></div>';
+}
+</script>
+</body>
+</html>
