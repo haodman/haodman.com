@@ -331,21 +331,6 @@ body {
 }
 .btn-outline:hover { background: var(--accent-subtle); border-color: var(--accent); color: var(--accent); }
 
-.btn-smart-split {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 12px; margin-left: 8px;
-  font-size: 12px; font-weight: 600;
-  border: 1px solid var(--accent);
-  border-radius: 6px;
-  background: var(--accent-subtle);
-  color: var(--accent);
-  cursor: pointer;
-  transition: all .2s;
-  white-space: nowrap;
-}
-.btn-smart-split:hover { background: var(--accent); color: #fff; }
-.btn-smart-split svg { flex-shrink: 0; }
-
 .btn-primary {
   background: var(--accent);
   color: white;
@@ -2762,95 +2747,6 @@ function App() {
     showToast('✓ 模块已复制');
   }, [showToast]);
 
-  // ── Smart Split: parse split-view content into module blocks ──
-  const smartSplit = useCallback(() => {
-    if (!leftText.trim() && !rightText.trim()) {
-      showToast('⚠ 双栏内容为空，无法拆分');
-      return;
-    }
-
-    // Keyword → block type mapping
-    const typeKeywords = [
-      { type: 'role',     keywords: ['角色', 'role', '身份', '人设', '扮演', 'persona', 'identity'] },
-      { type: 'context',  keywords: ['背景', 'context', '上下文', '场景', 'background', '任务', 'task', '核心任务', 'objective', '目标'] },
-      { type: 'rules',    keywords: ['规则', 'rule', '约束', 'constraint', '限制', '注意', 'note', '要求', 'requirement', '原则', 'principle', '规范'] },
-      { type: 'skills',   keywords: ['技能', 'skill', '能力', '工具', 'tool', '方法', 'method'] },
-      { type: 'output',   keywords: ['输出', 'output', '格式', 'format', '返回', 'return', '响应', 'response'] },
-      { type: 'examples', keywords: ['示例', 'example', '例子', '样例', 'sample', '案例', 'case'] },
-    ];
-
-    const detectType = (heading) => {
-      const lower = heading.toLowerCase();
-      for (const entry of typeKeywords) {
-        if (entry.keywords.some(kw => lower.includes(kw))) return entry.type;
-      }
-      return 'custom';
-    };
-
-    // Parse text by markdown headers (# or ##)
-    // The header line is KEPT inside the content so nothing is lost
-    const parseSections = (text) => {
-      if (!text || !text.trim()) return [];
-      const lines = text.split('\n');
-      const sections = [];
-      let currentTitle = null;
-      let currentLines = [];
-
-      for (const line of lines) {
-        const headerMatch = line.match(/^#{1,3}\s+(.+)$/);
-        if (headerMatch) {
-          if (currentTitle !== null) {
-            sections.push({ title: currentTitle, content: currentLines.join('\n').trim() });
-          }
-          currentTitle = headerMatch[1].trim();
-          currentLines = [line];  // keep the header line in the content
-        } else {
-          currentLines.push(line);
-        }
-      }
-      // Last section
-      if (currentTitle !== null) {
-        sections.push({ title: currentTitle, content: currentLines.join('\n').trim() });
-      }
-      // If no headers found, treat entire text as one block
-      if (sections.length === 0 && text.trim()) {
-        sections.push({ title: '内容', content: text.trim() });
-      }
-      return sections;
-    };
-
-    const leftSections = parseSections(leftText);
-    const rightSections = parseSections(rightText);
-
-    // Merge left and right by matching section index (aligned by position)
-    const maxLen = Math.max(leftSections.length, rightSections.length);
-    const newBlocks = [];
-
-    for (let i = 0; i < maxLen; i++) {
-      const ls = leftSections[i];
-      const rs = rightSections[i];
-      const title = (ls && ls.title) || (rs && rs.title) || '自定义模块';
-      const type = detectType(title);
-      newBlocks.push({
-        id: newBlockId(),
-        type,
-        name: title,
-        left: ls ? ls.content : '',
-        right: rs ? rs.content : '',
-        enabled: true,
-      });
-    }
-
-    if (newBlocks.length === 0) {
-      showToast('⚠ 未能识别可拆分的内容段落');
-      return;
-    }
-
-    setBlocks(newBlocks);
-    setViewMode('modules');
-    showToast(`✓ 已智能拆分为 ${newBlocks.length} 个模块`);
-  }, [leftText, rightText, showToast]);
-
   // ── Drag and drop ──
   const handleDragStart = useCallback((id) => {
     dragIdRef.current = id;
@@ -2984,14 +2880,6 @@ function App() {
           </div>
 
           <div className="tb-spacer" />
-
-          {(leftText.trim() || rightText.trim()) && (
-            <div className="tb-group">
-              <button className="btn btn-smart-split" onClick={smartSplit} title="将双栏内容按标题智能拆分为模块">
-                <Ic.Sparkle />&nbsp;智能拆分 → 模块化
-              </button>
-            </div>
-          )}
 
           <div className="tb-group">
             <button className="btn btn-ghost" onClick={() => exportFile('txt')}>
