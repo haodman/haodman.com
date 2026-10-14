@@ -49,8 +49,10 @@ body.stack .side{height:auto;width:min(420px,100%)}
 .phone .topbar .r{position:absolute;right:16px;top:0;display:flex;gap:18px;align-items:center}
 .phone .frame{position:absolute;top:117px;left:37px;width:315px;height:561px;border-radius:21px;overflow:hidden;border:1px solid rgba(255,255,255,.16);background:#111}
 .phone .frame canvas{width:100%;height:100%;display:block}
+body.multi-star-active .phone .frame{top:111px;left:35px;width:317px;height:557px;border-radius:26px;border-color:rgba(255,255,255,.2)}
 .phone .peek{position:absolute;top:136px;right:0;width:14px;height:526px;border-radius:14px 0 0 14px;background:#232326;overflow:hidden}
 .phone .peek canvas{width:100px;height:100%;display:block;filter:brightness(.55)}
+body.multi-star-active .phone .peek{top:133.4px;width:17.7px;height:513.7px}
 .phone .bottom{position:absolute;left:0;right:0;top:726px;height:70px}
 .phone .b{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:15px;font-weight:600;font-family:-apple-system,"SF Pro Text",system-ui,sans-serif}
 .phone .b.edit{left:67px;top:1px}.phone .b.edit .circ{width:47px;height:47px;border-radius:50%;background:#2c2c2e;display:grid;place-items:center}
@@ -924,6 +926,13 @@ function palette(image,crop){
     }
     return state.images.get(descriptor.src);
   }
+  const isMultiStar = () => S.fx === 'punchSymbols' && S.params.punchSymbols?.motif === '多图星芒';
+  const slotCount = vals => vals === S.params.punchSymbols || vals?.motif === '多图星芒' ? 4 : clamp(Math.round(vals?.count || 1), 1, 3);
+  function resolveImage(value) {
+    if (value === 'current') return S.media || src;
+    const entry = imageFor(value);
+    return entry?.ready ? entry.image : null;
+  }
   function geometry(p) {
     const count = clamp(Math.round(p.count),1,3), width = Math.round(W * clamp(p.width, .44, .68));
     const height = Math.round(H * (count===1?.72:.91));
@@ -1077,18 +1086,20 @@ function palette(image,crop){
     row.append(group);
   }
   function updatePicker() {
-    const box=$('#colorBarPhotos');box.replaceChildren();box.hidden=S.fx!=='colorBars';const active=!box.hidden;
+    const multiStar=isMultiStar(),box=$('#colorBarPhotos');box.replaceChildren();box.hidden=S.fx!=='colorBars'&&!multiStar;const active=!box.hidden;
     document.body.classList.toggle('color-bars-active',active);document.querySelectorAll('#photos .color-slot-badge').forEach(b=>b.remove());
-    const uploadButton=document.querySelector('#photos button.up:not(.more)');if(uploadButton)uploadButton.textContent=active?'上传\n1–3 张图片':'上传\n照片/视频';$('#photoFile').accept=active?'image/*':'image/*,video/*';if(!active)return;
-    const vals=S.params.colorBars;state.slot=clamp(state.slot||0,0,vals.count-1);
-    const layout=document.createElement('div');layout.className='color-picker-layout';
-    const countPane=document.createElement('div');countPane.className='color-picker-count';const countLabel=document.createElement('span');countLabel.className='color-picker-label';countLabel.textContent='图片张数';countPane.append(countLabel);countControl(countPane,vals);layout.append(countPane);
-    const orderPane=document.createElement('div');orderPane.className='color-picker-order';const orderHead=document.createElement('div');orderHead.className='color-picker-order-head';const orderLabel=document.createElement('span');orderLabel.className='color-picker-label';orderLabel.textContent='图片顺序';const orderHint=document.createElement('span');orderHint.className='color-picker-hint';orderHint.textContent='选择位置后点下方素材替换';orderHead.append(orderLabel,orderHint);orderPane.append(orderHead);
-    const slots=document.createElement('div');slots.className='color-photo-slots';for(let i=0;i<vals.count;i++){const descriptor=sourceFor(vals['photo'+i]),button=document.createElement('button');button.className='color-photo-slot'+(state.slot===i?' on':'');button.setAttribute('aria-label','选择第 '+(i+1)+' 张照片进行替换');button.title='第 '+(i+1)+' 张 · '+(descriptor?.name||'选择图片');const index=document.createElement('strong');index.textContent=i+1;const img=new Image();img.src=descriptor?.src||'';img.alt='';button.append(index,img);button.onclick=()=>{state.slot=i;updatePicker();};slots.append(button);}orderPane.append(slots);layout.append(orderPane);box.append(layout);
-    document.querySelectorAll('#photos button[data-i],#photos button[data-lib]').forEach(button=>{const value=button.dataset.lib||'preset:'+button.dataset.i,positions=Array.from({length:vals.count},(_,i)=>i).filter(i=>vals['photo'+i]===value);button.classList.toggle('on',positions.length>0);if(positions.length){const badge=document.createElement('span');badge.className='color-slot-badge';badge.textContent=positions.map(i=>i+1).join(' / ');button.append(badge);}});
+    document.body.classList.toggle('multi-star-active',multiStar);
+    const uploadButton=document.querySelector('#photos button.up:not(.more)');if(uploadButton)uploadButton.textContent=active?(multiStar?'上传\n4 张图片':'上传\n1–3 张图片'):'上传\n照片/视频';$('#photoFile').accept=active?'image/*':'image/*,video/*';if(!active)return;
+    const vals=multiStar?S.params.punchSymbols:S.params.colorBars,count=slotCount(vals);state.slot=clamp(state.slot||0,0,count-1);
+    const layout=document.createElement('div');layout.className='color-picker-layout';if(multiStar)layout.style.gridTemplateColumns='1fr';
+    if(!multiStar){const countPane=document.createElement('div');countPane.className='color-picker-count';const countLabel=document.createElement('span');countLabel.className='color-picker-label';countLabel.textContent='图片张数';countPane.append(countLabel);countControl(countPane,vals);layout.append(countPane);}
+    const orderPane=document.createElement('div');orderPane.className='color-picker-order';const orderHead=document.createElement('div');orderHead.className='color-picker-order-head';const orderLabel=document.createElement('span');orderLabel.className='color-picker-label';orderLabel.textContent=multiStar?'四图位置':'图片顺序';const orderHint=document.createElement('span');orderHint.className='color-picker-hint';orderHint.textContent='选择位置后点下方素材替换';orderHead.append(orderLabel,orderHint);orderPane.append(orderHead);
+    const slotNames=['顶部左图','顶部中图','顶部右图','下方大图'];
+    const slots=document.createElement('div');slots.className='color-photo-slots';for(let i=0;i<count;i++){const descriptor=sourceFor(vals['photo'+i]),button=document.createElement('button');button.className='color-photo-slot'+(state.slot===i?' on':'');button.setAttribute('aria-label','选择'+(multiStar?slotNames[i]:'第 '+(i+1)+' 张照片')+'进行替换');button.title=(multiStar?slotNames[i]:'第 '+(i+1)+' 张')+' · '+(descriptor?.name||'选择图片');const index=document.createElement('strong');index.textContent=i+1;const img=new Image();img.src=descriptor?.src||'';img.alt='';button.append(index,img);button.onclick=()=>{state.slot=i;updatePicker();};slots.append(button);}orderPane.append(slots);layout.append(orderPane);box.append(layout);
+    document.querySelectorAll('#photos button[data-i],#photos button[data-lib]').forEach(button=>{const value=button.dataset.lib||'preset:'+button.dataset.i,positions=Array.from({length:count},(_,i)=>i).filter(i=>vals['photo'+i]===value);button.classList.toggle('on',positions.length>0);if(positions.length){const badge=document.createElement('span');badge.className='color-slot-badge';badge.textContent=positions.map(i=>i+1).join(' / ');button.append(badge);}});
   }
   function choosePhoto(value, vals) {
-    const slot = clamp(state.slot || 0, 0, vals.count - 1);
+    const slot = clamp(state.slot || 0, 0, slotCount(vals) - 1);
     vals['photo' + slot] = value; vals['crop' + slot] = .5; state.scene = null;
     state.slot = slot; buildParams(); toast('已替换第 ' + (slot + 1) + ' 张照片，可继续对比');
   }
@@ -1098,7 +1109,8 @@ function palette(image,crop){
     row.append(note);
   }
   function photoControl(row, d, vals) {
-    row.hidden = +d.key.slice(-1) >= vals.count;
+    const multiStarVals=vals===S.params.punchSymbols||vals?.motif==='多图星芒';
+    row.hidden = multiStarVals ? true : +d.key.slice(-1) >= slotCount(vals);
     const wrap = document.createElement('div'); wrap.className = 'color-photo-control';
     const thumb = new Image(); thumb.alt = d.label; thumb.src = sourceFor(vals[d.key])?.src || '';
     const select = document.createElement('select'); select.setAttribute('aria-label', d.label);
@@ -1123,11 +1135,12 @@ function palette(image,crop){
   async function upload(files, vals, targetSlot = null) {
     const list = [...files];
     if (!list.length) return;
-    if (list.length > (targetSlot === null ? 3 : 1) || list.some(f => !f.type.startsWith('image/'))) { toast(targetSlot === null ? '请选择 1–3 张图片' : '请选择一张图片替换此位置'); return; }
+    const count=slotCount(vals),max=targetSlot===null?count:1;
+    if (list.length > max || list.some(f => !f.type.startsWith('image/'))) { toast(targetSlot === null ? `请选择 1–${count} 张图片` : '请选择一张图片替换此位置'); return; }
     await importFiles(list, 'photo');
     const records = list.map(f => LIB.photos.find(r => r.id === 'photo:' + f.name + ':' + f.size)).filter(Boolean);
     if (records.length !== list.length) { toast('有图片无法读取，请重新选择'); return; }
-    if (targetSlot === null) vals.count = records.length;
+    if (targetSlot === null && vals!==S.params.punchSymbols) vals.count = records.length;
     records.forEach((r, i) => { const slot = targetSlot === null ? i : targetSlot; vals['photo' + slot] = r.id; vals['crop' + slot] = .5; });
     state.slot = targetSlot === null ? 0 : targetSlot;
     state.scene = null; buildParams();
@@ -1141,7 +1154,7 @@ function palette(image,crop){
       Sel('batch', '每拍同时伸出', ['随重音 1–3 条', '每拍1条', '每拍2条', '每拍3条'], '随重音 1–3 条'),
       R('thickness', '色条粗细', .7, 1.6, 1), R('release', '收回时长', 0, 1, .55), R('jump', '文字跳高', 10, 86, 52, 1), R('textSize', '文字大小', 12, 23, 19, 1),
       { key: 'rules', label: '取色与背景规则', type: 'colorRules', def: '' }],
-    state, draw, photoControl, countControl, rulesControl, updatePicker, choosePhoto, upload, shortWords, trip, geometry,
+    state, draw, photoControl, countControl, rulesControl, updatePicker, choosePhoto, upload, resolveImage, sourceFor, shortWords, trip, geometry,
   };
 }
 
@@ -1329,7 +1342,7 @@ function palette(image,crop){
 /* Continuous photo/paper cutouts. All masks are code-native so edges
    and the split remain exact at export resolution. */
 window.createPunchCollageEffect=function({W,H,ctx,src,S,R,Sel,C,clamp}){
-  const names=['斜线雨滴','像素雪花','点阵四角星','点阵星芒','双线五角星','像素太阳'];
+  const names=['斜线雨滴','像素雪花','点阵四角星','点阵星芒','双线五角星','像素太阳','多图星芒'];
   const s={clock:0,last:null,points:[],key:''};
   function photoColor(){
     if(s.colorKey===S.srcKey&&s.photoColor)return s.photoColor;
@@ -1341,6 +1354,7 @@ window.createPunchCollageEffect=function({W,H,ctx,src,S,R,Sel,C,clamp}){
     s.colorKey=S.srcKey;s.photoColor=best.w>1?`hsl(${(Math.atan2(best.y,best.x)*180/Math.PI+360)%360} ${clamp(best.sat/best.w*75+8,33,76)}% 79%)`:'#ecebe6';return s.photoColor;
   }
   function cover(g,img,x,y,w,h){const iw=img.naturalWidth||img.videoWidth||img.width,ih=img.naturalHeight||img.videoHeight||img.height;if(!iw||!ih)return;const k=Math.max(w/iw,h/ih);g.drawImage(img,x+(w-iw*k)/2,y+(h-ih*k)/2,iw*k,ih*k);}
+  function croppedCover(g,img,x,y,w,h,crop=.5){if(!img)return;const iw=img.naturalWidth||img.videoWidth||img.width,ih=img.naturalHeight||img.videoHeight||img.height;if(!iw||!ih)return;const k=Math.max(w/iw,h/ih),dw=iw*k,dh=ih*k;g.save();g.beginPath();g.rect(x,y,w,h);g.clip();g.drawImage(img,x+(w-dw)/2,y-(dh-h)*clamp(crop,0,1),dw,dh);g.restore();}
   function shape(kind,r,upper){
     const path=new Path2D();
     if(kind===0){
@@ -1428,30 +1442,116 @@ window.createPunchCollageEffect=function({W,H,ctx,src,S,R,Sel,C,clamp}){
     s.bars??=Array(16).fill(3);
     for(let i=0;i<16;i++){const band=i<5?f.bass:i<11?f.mid:f.high,target=3+(S.playing?Math.max(band||0,f.energy*.4||0)*13*(.45+.55*Math.sin(s.clock*6+i*1.7)**2)+(f.kick||0)*6:0);s.bars[i]+=(target-s.bars[i])*.22;const bh=s.bars[i];ctx.fillStyle='#b4b6ae';ctx.beginPath();ctx.roundRect(x+pad+4+i*(textW-10)/16,y+h*.72-bh/2,3.2,bh,1.6);ctx.fill();}ctx.restore();
   }
-  return {name:'图形镂空',icon:'🔘',desc:'流动剪纸 · 六种图形',hint:'上屏原图，下屏色纸。雨滴斜落、雪花轻飘、星星与太阳随音乐闪烁；跨越分界时变为照片镂空。',state:s,
-    params:[Sel('motif','图形预设',names,names[4]),R('count','图形数量',8,28,19,1),R('size','图形大小',12,40,22,1),R('speed','运动速度',0,2,1,.05),R('pulse','节奏幅度',0,1,.65,.05),Sel('groundMode','底色',['照片取色','自选颜色'],'照片取色'),C('col','自选底色','#f6f5ef'),Sel('paper','底纸质感',['细织纹','纯色'],'细织纹')],
+  function burstShape(r){const path=new Path2D();for(let i=0;i<16;i++){const a=-Math.PI/2+i*Math.PI/8,outer=i%2===0,axis=i%4===0,rr=outer?r*(axis?1:.68):r*.13;i?path.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):path.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}path.closePath();return path;}
+  function multiImage(p,index){return FX.colorBars.resolveImage(p['photo'+index])||S.media||src;}
+  // Exact geometry from Figma node 1:3272 (317 x 557).
+  function multiGeometry(){return{y:0,h:H,split:H*238/557,bottom:H,topY:H*54/557,photoW:W*80/317,photoH:H*129/557,left:W*28/317,gap:W*10/317,radius:W*26/317};}
+  function drawMultiBase(p,color){
+    const g=multiGeometry(),{split,topY,photoW,photoH,left,gap,radius}=g;s.multiGeometry=g;
+    ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);ctx.save();ctx.beginPath();ctx.roundRect(0,g.y,W,g.h,radius);ctx.clip();
+    ctx.fillStyle=color;ctx.fillRect(0,g.y,W,split-g.y);
+    if(p.paper==='细织纹'){
+      if(!s.multiPaper){s.multiPaper=new Image();s.multiPaper.src='src/textures/multi-star-paper-texture.png';}
+      if(s.multiPaper.complete&&s.multiPaper.naturalWidth){ctx.save();ctx.globalAlpha=.78;ctx.drawImage(s.multiPaper,0,0,W,split);ctx.restore();}
+    }
+    for(let i=0;i<3;i++)croppedCover(ctx,multiImage(p,i),left+i*(photoW+gap),topY,photoW,photoH,p['crop'+i]??.5);
+    croppedCover(ctx,multiImage(p,3),0,split,W,g.bottom-split,p.crop3??.5);
+    ctx.restore();return g;
+  }
+  function drawMultiStar(p,q,x,y,r,alpha,index,color){
+    const bottom=multiImage(p,3),g=s.multiGeometry||multiGeometry(),tileSize=192;
+    if(!s.starMaskImage){s.starMaskImage=new Image();s.starMaskImage.src='src/textures/multi-star-shape.png';s.starTile=document.createElement('canvas');s.starTile.width=s.starTile.height=tileSize;}
+    ctx.save();ctx.beginPath();ctx.roundRect(0,g.y,W,g.h,g.radius);ctx.clip();ctx.globalAlpha=alpha;
+    if(s.starMaskImage.complete&&s.starMaskImage.naturalWidth){const tg=s.starTile.getContext('2d'),mask=()=>{tg.globalCompositeOperation='destination-in';tg.drawImage(s.starMaskImage,0,0,tileSize,tileSize);tg.globalCompositeOperation='source-over';};
+      // Above the split, all stars sample one continuous lower-photo plane.  The
+      // star's canvas-space position offsets that plane, so every cutout reveals
+      // a different matching part of the photo instead of repeating a thumbnail.
+      tg.setTransform(1,0,0,1,0,0);tg.clearRect(0,0,tileSize,tileSize);
+      const iw=bottom?.naturalWidth||bottom?.videoWidth||bottom?.width,ih=bottom?.naturalHeight||bottom?.videoHeight||bottom?.height,topH=g.split-g.y;
+      if(iw&&ih){
+        // Give the shared plane a bleed larger than a star radius. This keeps
+        // right/left-edge cutouts mapped while preserving one continuous image.
+        const bleed=Math.max(r*1.15,W*.06),mx=-bleed,my=g.y-bleed,mw=W+bleed*2,mh=topH+bleed*2,k=Math.max(mw/iw,mh/ih),dw=iw*k,dh=ih*k,dx=mx+(mw-dw)/2,dy=my-(dh-mh)*clamp(p.crop3??.5,0,1),mapScale=tileSize/Math.max(1,r*2);
+        // The 192px mask tile represents a 2r-wide rectangle in effect-space.
+        // Scale the shared plane into that coordinate system before sampling it.
+        tg.drawImage(bottom,(dx-(x-r))*mapScale,(dy-(y-r))*mapScale,dw*mapScale,dh*mapScale);
+      }
+      mask();
+      ctx.save();ctx.beginPath();ctx.rect(0,g.y,W,g.split-g.y);ctx.clip();ctx.drawImage(s.starTile,x-r,y-r,r*2,r*2);ctx.restore();
+      // Below the split, the same star switches to the upper paper's color and texture.
+      tg.clearRect(0,0,tileSize,tileSize);tg.fillStyle=color;tg.fillRect(0,0,tileSize,tileSize);
+      if(p.paper==='细织纹'&&s.multiPaper?.complete&&s.multiPaper.naturalWidth){tg.save();tg.globalAlpha=.78;tg.drawImage(s.multiPaper,0,0,tileSize,tileSize);tg.restore();}mask();
+      ctx.save();ctx.beginPath();ctx.rect(0,g.split,W,g.bottom-g.split);ctx.clip();ctx.drawImage(s.starTile,x-r,y-r,r*2,r*2);ctx.restore();
+    }else{ctx.translate(x,y);ctx.clip(burstShape(r));if(y<g.split)croppedCover(ctx,bottom,-r,-r,r*2,r*2,p.crop3??.5);else{ctx.fillStyle=color;ctx.fillRect(-r,-r,r*2,r*2);}}
+    ctx.restore();
+  }
+  function multiPlayer(f,p,color,dt){
+    const g=s.multiGeometry||multiGeometry(),x=W*27/317,y=H*263/557,w=W*261.8147888/317,h=H*44.8586807/557,r=h*13.937/44.8586807,bottom=multiImage(p,3);
+    ctx.save();ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.clip();
+    ctx.save();ctx.filter=`blur(${H*5/557}px) saturate(.86) brightness(.88)`;croppedCover(ctx,bottom,0,g.split,W,g.bottom-g.split,p.crop3??.5);ctx.restore();ctx.restore();
+    if(!s.playerPlateImage){s.playerPlateImage=new Image();s.playerPlateImage.src='src/textures/multi-star-player-plate.png';s.playerPlateCanvas=document.createElement('canvas');s.playerPlateCanvas.width=786;s.playerPlateCanvas.height=135;}
+    ctx.save();ctx.shadowColor='rgba(0,0,0,.10)';ctx.shadowBlur=H*5.973/557;ctx.shadowOffsetY=H*1.991/557;
+    if(s.playerPlateImage.complete&&s.playerPlateImage.naturalWidth){const pg=s.playerPlateCanvas.getContext('2d');pg.clearRect(0,0,786,135);pg.drawImage(s.playerPlateImage,0,0);pg.globalCompositeOperation='source-in';pg.globalAlpha=.4;pg.fillStyle=color;pg.fillRect(0,0,786,135);pg.globalCompositeOperation='source-over';pg.globalAlpha=1;ctx.drawImage(s.playerPlateCanvas,x,y,w,h);}
+    else{ctx.globalAlpha=.4;ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();ctx.globalAlpha=1;}
+    ctx.restore();ctx.save();ctx.strokeStyle='rgba(255,255,255,.10)';ctx.lineWidth=Math.max(1,W/317);ctx.beginPath();ctx.roundRect(x+.5,y+.5,w-1,h-1,r);ctx.stroke();
+    const ax=x+w*9.955/261.8147888,ay=y+h*8.453/44.8586807,coverSize=w*27.966/261.8147888;
+    if(s.coverURL!==S.track?.cover){s.coverURL=S.track?.cover;s.cover=new Image();if(s.coverURL)s.cover.src=s.coverURL;}
+    ctx.save();ctx.beginPath();ctx.roundRect(ax,ay,coverSize,coverSize,coverSize*.22);ctx.clip();if(s.cover?.complete&&s.cover.naturalWidth)cover(ctx,s.cover,ax,ay,coverSize,coverSize);else{ctx.fillStyle='rgba(255,255,255,.22)';ctx.fillRect(ax,ay,coverSize,coverSize);}ctx.restore();
+    const tx=x+w*45.83/261.8147888,textW=w*159.665/261.8147888;
+    ctx.textBaseline='top';ctx.fillStyle='#fff';ctx.font=`600 ${H*14/557}px "TikTok Display", -apple-system, "PingFang SC", sans-serif`;ctx.fillText(ellipsis(ctx,S.track?.name||'选择音乐',textW),tx,y+h*7/44.8586807);
+    ctx.fillStyle='rgba(255,255,255,.70)';ctx.font=`400 ${H*10/557}px "TikTok Display", -apple-system, "PingFang SC", sans-serif`;ctx.fillText(ellipsis(ctx,S.track?.artist||S.track?.genre||'Audio Visual Lab',textW),tx,y+h*23/44.8586807);
+    const waveX=x+w*229/261.8147888,waveY=y+h*16/44.8586807,waveW=w*25.389/261.8147888,waveH=h*15.075/44.8586807;
+    const base=[3.967,7.141,10.314,7.141,5.554,3.967],bands=[f.bass||0,f.bass||0,f.mid||0,f.mid||0,f.high||0,f.high||0],beat=Math.max(f.beat||0,f.kick||0,(f.snare||0)*.8),energy=f.energy||0;
+    s.waveBars??=base.slice();const follow=1-Math.exp(-Math.max(.001,dt||1/60)*(S.playing?18:9));
+    ctx.save();ctx.fillStyle='#fff';ctx.globalAlpha=.4+clamp(energy*.16+beat*.1,0,.22);
+    for(let i=0;i<6;i++){const live=S.playing?clamp(bands[i]*1.2+energy*.28+beat*(i===2||i===3?.38:.18),0,1):0,target=clamp(base[i]*(.62+live*1.05),2.5,15.075);s.waveBars[i]+=(target-s.waveBars[i])*follow;const bh=h*s.waveBars[i]/44.8586807,bw=w*1.587/261.8147888,bx=waveX+waveW*(3.97+i*3.174)/25.389;ctx.beginPath();ctx.roundRect(bx-bw/2,waveY+(waveH-bh)/2,bw,bh,bw/2);ctx.fill();}
+    ctx.restore();
+    ctx.restore();
+  }
+  return {name:'图形镂空',icon:'🔘',desc:'流动剪纸 · 单图与多图',hint:'六种单图图形加一套四图星芒版式；多图星芒复用点阵星芒的运动节奏，上底纸继续使用照片取色或自选底色。',state:s,
+    params:[Sel('motif','图形预设',names,names[4]),{key:'photo0',label:'顶部左图',type:'colorPhoto',def:'current'},{key:'photo1',label:'顶部中图',type:'colorPhoto',def:'current'},{key:'photo2',label:'顶部右图',type:'colorPhoto',def:'current'},{key:'photo3',label:'下方大图',type:'colorPhoto',def:'current'},{key:'upload',label:'四张图片',type:'colorUpload',def:''},R('count','图形数量',8,28,19,1),R('size','图形大小',12,40,22,1),R('speed','运动速度',0,2,1,.05),R('pulse','节奏幅度',0,1,.65,.05),R('accentCount','重拍放大数量',1,5,3,1),R('accentSize','重拍随机大小',1.2,3,2.6,.1),Sel('groundMode','底色',['照片取色','自选颜色'],'照片取色'),C('col','自选底色','#f6f5ef'),Sel('paper','底纸质感',['细织纹','纯色'],'细织纹')],
     drawIcon,names,
     draw(f,p,t){
       const dt=Math.min(.05,Math.max(0,t-(s.last??t)));s.last=t;if(S.playing)s.clock+=dt;
-      const top=W,kind=Math.max(0,names.indexOf(p.motif)),color=p.groundMode==='自选颜色'?p.col:photoColor(),key=S.srcKey+'|'+p.count+'|'+kind;
-      // Scale the source once, not once per clipped particle (large photos can
-      // otherwise saturate the renderer while the video encoder is running).
-      if(!s.photo){s.photo=document.createElement('canvas');s.photo.width=s.photo.height=W;}
-      if(s.photoKey!==S.srcKey||s.photoMedia!==S.media||S.isVideo){
-        const g=s.photo.getContext('2d');g.clearRect(0,0,W,W);cover(g,S.media||src,0,0,W,W);s.photoKey=S.srcKey;s.photoMedia=S.media;
+      const kind=Math.max(0,names.indexOf(p.motif)),multi=kind===6,top=multi?multiGeometry().split:W,color=p.groundMode==='自选颜色'?p.col:photoColor(),key=S.srcKey+'|'+p.count+'|'+kind;
+      if(s.key!==key){s.key=key;const random=i=>{const v=Math.sin(i*127.1+43.7)*43758.5453;return v-Math.floor(v);};const refs=[[.0016,.2558,33],[.0946,.2998,18],[.8486,.3878,18],[.1451,.4237,40],[.3596,.3662,24],[.7019,.4587,35],[.9101,.3241,33],[.6451,.1266,33],[.9385,.0817,33],[.2382,.0512,27],[.3596,.1490,18],[.0931,.6436,33],[.2050,.7127,24],[.1514,.8707,46],[.3533,.7828,24],[.7429,.8519,35],[.9070,.9111,23],[.8691,.6688,27]];s.points=Array.from({length:p.count},(_,i)=>{if(multi&&i<refs.length){const [x,y,size]=refs[i];return{x:W*x,y:H*y,phase:i*2.399,r:size*W/(2*317*22)};}return{x:W*(.07+.86*random(i+1)),y:(i+random(i+79))/p.count*H,phase:i*2.399,r:.62+random(i+31)*.65};});}
+      if(multi)drawMultiBase(p,color);
+      else{
+        // Scale the source once, not once per clipped particle (large photos can
+        // otherwise saturate the renderer while the video encoder is running).
+        if(!s.photo){s.photo=document.createElement('canvas');s.photo.width=s.photo.height=W;}
+        if(s.photoKey!==S.srcKey||s.photoMedia!==S.media||S.isVideo){const g=s.photo.getContext('2d');g.clearRect(0,0,W,W);cover(g,S.media||src,0,0,W,W);s.photoKey=S.srcKey;s.photoMedia=S.media;}
+        ctx.drawImage(s.photo,0,0);
+        ctx.fillStyle=color;ctx.fillRect(0,top,W,H-top);
+        if(p.paper==='细织纹'){
+          if(!s.weave){s.weave=document.createElement('canvas');s.weave.width=s.weave.height=48;const g=s.weave.getContext('2d');for(let y=0;y<48;y+=3)for(let x=0;x<48;x+=3){g.fillStyle=(x+y)%2?'rgba(255,255,255,.18)':'rgba(80,65,40,.055)';g.fillRect(x,y,1,2);}}
+          ctx.fillStyle=ctx.createPattern(s.weave,'repeat');ctx.fillRect(0,top,W,H-top);
+        }
       }
-      if(s.key!==key){s.key=key;const random=i=>{const v=Math.sin(i*127.1+43.7)*43758.5453;return v-Math.floor(v);};s.points=Array.from({length:p.count},(_,i)=>({x:W*(.07+.86*random(i+1)),y:(i+random(i+79))/p.count*H,phase:i*2.399,r:.62+random(i+31)*.65}));}
-      ctx.drawImage(s.photo,0,0);
-      ctx.fillStyle=color;ctx.fillRect(0,top,W,H-top);
-      if(p.paper==='细织纹'){
-        if(!s.weave){s.weave=document.createElement('canvas');s.weave.width=s.weave.height=48;const g=s.weave.getContext('2d');for(let y=0;y<48;y+=3)for(let x=0;x<48;x+=3){g.fillStyle=(x+y)%2?'rgba(255,255,255,.18)':'rgba(80,65,40,.055)';g.fillRect(x,y,1,2);}}
-        ctx.fillStyle=ctx.createPattern(s.weave,'repeat');ctx.fillRect(0,top,W,H-top);
-      }
-      const hit=Math.max(f.beat||0,f.kick||0,f.snare||0),energy=Math.max(f.energy||0,f.bass||0),edge=S.playing&&energy>.025&&hit>.5&&(s.prevHit||0)<=.5&&s.clock-(s.lastBeat??-9)>.18;
-      s.prevHit=hit;
+      const hit=Math.max(f.beat||0,f.kick||0,f.snare||0),energy=Math.max(f.energy||0,f.bass||0),edge=S.playing&&energy>.025&&hit>.5&&(s.prevHit||0)<=.5&&s.clock-(s.lastBeat??-9)>.18,
+        strongHit=Math.max(f.bar||0,(f.kick||0)*1.08,(f.snare||0)*.94),strongEdge=S.playing&&energy>.04&&strongHit>.56&&(s.prevStrong||0)<=.56&&s.clock-(s.lastStrong??-9)>.28;
+      s.prevHit=hit;s.prevStrong=strongHit;if(strongEdge)s.lastStrong=s.clock;
       if(edge){s.lastBeat=s.clock;s.impulse=.55+.45*clamp(energy,0,1);}
       const impulse=s.impulse||0,decay=Math.exp(-dt*9),travel=S.playing?impulse*(1-decay)/9:0;
       if(S.playing)s.impulse=impulse*decay;
+      if((kind===0||kind===1)&&strongEdge){
+        // A strong beat enlarges only a few well-separated rain/snow shapes. Their peak
+        // size and timing are stored per particle so the animation eases back
+        // smoothly instead of making the whole rain field jump.
+        const wanted=Math.max(1,Math.min(s.points.length,Math.round(p.accentCount??3)));
+        let pool=s.points.filter(q=>s.clock-(q.accentAt??-9)>.48),picked=[];
+        if(pool.length<wanted)pool=s.points.slice();
+        while(picked.length<wanted&&pool.length){
+          let pick=0,best=-Infinity;
+          for(let i=0;i<pool.length;i++){
+            const q=pool[i],spacing=picked.length?Math.min(...picked.map(a=>Math.hypot((q.x-a.x)/W,(q.y-a.y)/H))):Math.random();
+            const score=spacing+Math.random()*.08;
+            if(score>best){best=score;pick=i;}
+          }
+          const q=pool.splice(pick,1)[0],maxScale=Math.max(1.2,p.accentSize??2.6),minScale=Math.max(1.12,maxScale-.42);
+          q.accentAt=s.clock;q.accentLife=.46+Math.random()*.12;q.accentScale=minScale+Math.random()*(maxScale-minScale);picked.push(q);
+        }
+      }
       if(kind===2&&edge){
         // Each accent starts a few stationary blooms; only invisible slots relocate.
         const available=s.points.filter(q=>q.born===undefined||s.clock-q.born>=q.life);
@@ -1462,14 +1562,26 @@ window.createPunchCollageEffect=function({W,H,ctx,src,S,R,Sel,C,clamp}){
           q.born=s.clock;q.life=1.25+Math.random()*.7;q.accent=impulse;
         }
       }
-      for(const q of s.points){
-        if(S.playing&&kind!==2){const step=p.speed*(kind===0?travel*740*p.pulse:kind===1?dt*(9+energy*8)*(.75+q.r*.3):dt*energy*10+travel*65*p.pulse);q.y+=step;if(kind===0)q.x-=step*.28;if(q.y>H+45){q.y=-45;q.x=(q.x+W*.381966)%W;}if(q.x< -40)q.x=W+35;}
+      for(let qi=0;qi<s.points.length;qi++){const q=s.points[qi];
+        if(S.playing&&kind!==2){
+          if(kind===0){
+            // Original rain movement: each beat advances the diagonal fall,
+            // with the existing speed and rhythm settings controlling travel.
+            const step=p.speed*travel*740*p.pulse;q.y+=step;q.x-=step*.28;
+            if(q.y>H+45){q.y=-45;q.x=(q.x+W*.381966)%W;}if(q.x< -40)q.x=W+35;
+          }else{
+            const step=p.speed*(kind===1?dt*(9+energy*8)*(.75+q.r*.3):dt*energy*10+travel*65*p.pulse);q.y+=step;
+            if(q.y>H+45){q.y=-45;q.x=(q.x+W*.381966)%W;}if(q.x< -40)q.x=W+35;
+          }
+        }
         // Snow sway uses continuous phases, never the raw beat amplitude (no snapping).
         const snowTime=s.clock*p.speed,wind=kind===1?
           Math.sin(snowTime*(.34+q.r*.12)+q.phase)*W*.045+
           Math.sin(snowTime*.79+q.phase*1.7)*W*.012:0;
         const x=q.x+(kind===1?wind:kind===0||kind===2?0:Math.sin(s.clock*.55+q.phase)*7*clamp(energy*2,0,1)),y=q.y;
-        let twinkle=kind>=2?clamp(.84+impulse*p.pulse*.35,.84,1):1,r=p.size*q.r*(1+impulse*p.pulse*(kind>=2?.38:kind===1?.04:.13));
+        let accentScale=1;
+        if((kind===0||kind===1)&&q.accentAt!==undefined){const age=s.clock-q.accentAt,life=q.accentLife||.5;if(age>=0&&age<life){const u=age/life,smooth=v=>{v=clamp(v,0,1);return v*v*(3-2*v);},bump=u<.2?smooth(u/.2):1-smooth((u-.2)/.8);accentScale=1+((q.accentScale||1)-1)*bump;}}
+        let twinkle=kind>=2?clamp(.84+impulse*p.pulse*.35,.84,1):1,r=p.size*q.r*(1+impulse*p.pulse*(kind>=2?.38:kind===1?.04:.13))*accentScale;
         if(kind===2){
           if(q.born===undefined)continue;
           const age=s.clock-q.born,u=age/q.life;if(u>=1)continue;
@@ -1477,13 +1589,14 @@ window.createPunchCollageEffect=function({W,H,ctx,src,S,R,Sel,C,clamp}){
           twinkle=smooth(u/.16)*(1-smooth((u-.3)/.7));
           r=p.size*q.r*(.78+.22*smooth(u/.16)+Math.sin(Math.PI*clamp(u/.45,0,1))*.22*p.pulse*(q.accent||0));
         }
-        for(const upper of [true,false]){ctx.save();ctx.beginPath();ctx.rect(0,upper?0:top,W,upper?top:H-top);ctx.clip();ctx.globalAlpha=twinkle;ctx.translate(x,y);
-          if(upper)drawIcon(ctx,kind,0,0,r,color);
-          else{ctx.clip(shape(kind,r,false));ctx.drawImage(s.photo,-x,top-y);}
-          ctx.restore();
-        }
+        if(multi)drawMultiStar(p,q,x,y,r,twinkle,qi,color);
+        else for(const upper of [true,false]){ctx.save();ctx.beginPath();ctx.rect(0,upper?0:top,W,upper?top:H-top);ctx.clip();ctx.globalAlpha=twinkle;ctx.translate(x,y);
+            if(upper)drawIcon(ctx,kind,0,0,r,color);
+            else{ctx.clip(shape(kind,r,false));ctx.drawImage(s.photo,-x,top-y);}
+            ctx.restore();
+          }
       }
-      card(f,top);
+      if(multi)multiPlayer(f,p,color,dt);else card(f,top);
     }
   };
 };
@@ -3916,7 +4029,7 @@ const FX_CAPS = {
   dots: ['原色灯珠', '亮度尺寸映射', '节拍光浪'], mosaic: ['大块取景', '重音错位回弹', '照片自适应取色'], warhol: ['四种分镜布局', '等比例特写', '四拍换景'],
   ascii: ['原色字符成像', '歌词标题排印'], rain: ['无描边纯色字粒', '四种字体风格', '七种取色模式', '按列落位', '鼓点重组'], bars: ['实时 FFT', '连续曲线插值', '前后景声波海报'],
   hud: ['短标记自动分组', '曲线点阵网格', '流动高亮点', '双层湍流场', 'CH/QUERY 数据标注', '音乐位移波'], pixelReveal: ['细密原色采样', '局部砂粒位移', '鼓点扬起与回落'],
-  lyricSilhouette: ['Pour 顺序填形', 'MODNet alpha 容器', '增强 LRC 逐词时间', '纸纹双层合成', '低频发光脉冲'], contourField: ['MODNet 主体蒙版', '蒙版膨胀/差集', '文字轮廓合并', '低频/节拍扩散'], textWrap: ['MODNet 主体外轮廓', '曲线字形排版', '弧长防重叠', '歌词时间轴', '鼓点重点词推进'], subjectOrbit: ['MODNet 前后遮挡', '3D 深度投影', '正向字牌及侧向透视', '自定义弹出符号', '双色辉光'], lyricGravity: ['MODNet 主体碰撞体', '歌词逐字时间轴', '随机落点', '文字刚体碰撞', '轮廓堆积'], punchSymbols: ['单字符蒙版', '上下正负形', '同位置照片采样', '节拍轻弹'], objectPulse: ['SlimSAM 通用分割', '任意图片多物体', '按图缓存蒙版', '强曝光与纯色合成'], rhythmPuzzle: ['九宫格裁切', '整行整列滑轨', '重音触发', '自动拼回完整图', '图片取色文案'], stretchBands: ['局部色彩采样', '横向像素延展', '主体分割保护', '节拍状态机'],
+  lyricSilhouette: ['Pour 顺序填形', 'MODNet alpha 容器', '增强 LRC 逐词时间', '纸纹双层合成', '低频发光脉冲'], contourField: ['MODNet 主体蒙版', '蒙版膨胀/差集', '文字轮廓合并', '低频/节拍扩散'], textWrap: ['MODNet 主体外轮廓', '曲线字形排版', '弧长防重叠', '歌词时间轴', '鼓点重点词推进'], subjectOrbit: ['MODNet 前后遮挡', '3D 深度投影', '正向字牌及侧向透视', '自定义弹出符号', '双色辉光'], lyricGravity: ['MODNet 主体碰撞体', '歌词逐字时间轴', '随机落点', '文字刚体碰撞', '轮廓堆积'], punchSymbols: ['六套单图剪纸', '四图星芒版式', '照片取色底纸', '同位置照片采样', '节拍轻弹'], objectPulse: ['SlimSAM 通用分割', '任意图片多物体', '按图缓存蒙版', '强曝光与纯色合成'], rhythmPuzzle: ['九宫格裁切', '整行整列滑轨', '重音触发', '自动拼回完整图', '图片取色文案'], stretchBands: ['局部色彩采样', '横向像素延展', '主体分割保护', '节拍状态机'],
   subjectSplit: ['实时主体分割', '前景/背景分层', '图片取色', '轮廓文字填充', '高低频/节拍驱动']
 };
 
@@ -4019,7 +4132,7 @@ function buildEffectCopy() {
   if (box.hidden) return;
   if(id==='punchSymbols'){
     const row=document.createElement('div');row.className='symbol-presets';row.style.flexWrap='wrap';
-    FX[id].names.forEach((name,i)=>{const b=document.createElement('button');b.className='chip'+(vals.motif===name?' on':'');b.textContent=name;b.setAttribute('aria-pressed',String(vals.motif===name));b.onclick=()=>{vals.motif=name;buildEffectCopy();};row.appendChild(b);});box.appendChild(row);return;
+    FX[id].names.forEach((name,i)=>{const b=document.createElement('button');b.className='chip'+(vals.motif===name?' on':'');b.textContent=name;b.setAttribute('aria-pressed',String(vals.motif===name));b.onclick=()=>{vals.motif=name;FX[id].state.key='';buildParams();};row.appendChild(b);});box.appendChild(row);return;
   }
   if(id==='lyricSilhouette'){
     const presets=[['混合','☆ ♪ ✶ ♫'],['星星','☆ ✶'],['音符','♪ ♫ ♩ ♬']];
@@ -4066,7 +4179,7 @@ function buildParams() {
     if (d.type === 'colorCount') FX.colorBars.countControl(row, vals);
     else if (d.type === 'colorRules') FX.colorBars.rulesControl(row);
     else if (d.type === 'colorPhoto') FX.colorBars.photoControl(row, d, vals);
-    else if (d.type === 'colorUpload') { const upload = document.createElement('input'); upload.type = 'file'; upload.accept = 'image/*'; upload.multiple = true; upload.hidden = true; const button = document.createElement('button'); button.className = 'chip'; button.textContent = '上传 1–3 张图片'; button.onclick = () => upload.click(); upload.onchange = async () => { await FX.colorBars.upload(upload.files, vals); upload.value = ''; }; row.append(button, upload); }
+    else if (d.type === 'colorUpload') { const multiStar=S.fx==='punchSymbols';row.hidden=multiStar;const upload = document.createElement('input'); upload.type = 'file'; upload.accept = 'image/*'; upload.multiple = true; upload.hidden = true; const button = document.createElement('button'); button.className = 'chip'; button.textContent = multiStar?'上传 1–4 张图片':'上传 1–3 张图片'; button.onclick = () => upload.click(); upload.onchange = async () => { await FX.colorBars.upload(upload.files, vals); upload.value = ''; }; row.append(button, upload); }
     else if (d.type === 'range') { const inp = document.createElement('input'); inp.type = 'range'; inp.min = d.min; inp.max = d.max; inp.step = d.step; inp.value = vals[d.key]; const v = document.createElement('div'); v.className = 'v'; v.textContent = fmt(vals[d.key], d.step); inp.oninput = () => { vals[d.key] = +inp.value; v.textContent = fmt(+inp.value, d.step); if (d.key === 'pitch') delete S.cache['lum' + vals.pitch]; }; row.appendChild(inp); row.appendChild(v); }
     else if (d.type === 'text') { const inp = document.createElement('input'); inp.type = 'text'; inp.value = vals[d.key]; inp.placeholder = '用 / 或逗号分隔'; inp.style.gridColumn = '2/4'; inp.className = 'txt'; inp.oninput = () => vals[d.key] = inp.value; row.appendChild(inp); }
     else if (d.type === 'color') { const inp = document.createElement('input'); inp.type = 'color'; inp.value = vals[d.key]; inp.oninput = () => vals[d.key] = inp.value; row.appendChild(inp); row.appendChild(document.createElement('div')); }
@@ -4187,12 +4300,27 @@ function drawExportCover(g, source, x, y, w, h) {
 function resetActiveEffectForExport(){
   const fx=FX[S.fx],s=fx?.state;if(!s)return;fx.enter?.();
   Object.assign(s,{clock:0,step:0,born:0,last:0,lastHit:-9,lastDrop:0,hit:0,hitWas:0,prevHit:0,prevBeat:0,prevTextHit:0,cursor:-1,word:0,active:[],drops:[],sparks:[],moves:[],pendingSlides:[],solveQueue:[],lastAudio:null,beatCount:0});
+  if(S.fx==='punchSymbols'){
+    // All seven cutout presets share this particle field, but individual points
+    // also carry preset-specific timing (rain accents and four-point blooms).
+    // Rebuild from the current parameter values for every export so no preview
+    // position or future timestamp can leak into the exported 0-second frame.
+    Object.assign(s,{clock:0,last:null,key:'',points:[],bars:Array(16).fill(3),multiBars:Array(9).fill(3),impulse:0,prevHit:0,lastBeat:-9,prevStrong:0,lastStrong:-9});
+  }
   if(S.fx==='subjectSplit'){s.insideKey='';s.inside=[];s.nodes=[];s.topSub=null;s.bottomSub=null;s.plate=null;s.tm=null;}
   if(S.fx==='lyricGravity')FX.lyricGravity.enter();
   if(S.fx==='subjectOrbit')FX.subjectOrbit.enter();
   if(S.fx==='rhythmPuzzle')s.sourceKey=null;
   if(S.fx==='colorBars'){s.scene=null;s.textBounds=[];}
   if(S.fx==='punchStudio'){s.origin=0;s.key=null;}
+}
+function resetAudioFeaturesForExport(){
+  // The offline-style export restarts the song at 0 seconds. Reset the shared
+  // beat cursor and transient history as well, otherwise the first strong beats
+  // can be compared against the preview's old playback position and be missed.
+  lastBeatIdx=-999999;lastBarIdx=-999999;S.beatImp=0;S.barImp=0;prevSpec=null;
+  for(const k of ['kick','snare','hat','energy','bass','mid','high'])live[k]=0;
+  live.hist={l:[],m:[],h:[]};delete live.pl;delete live.pm;delete live.ph;
 }
 function drawPhoneExport(out) {
   const d = out.getContext('2d');
@@ -4212,11 +4340,14 @@ function drawPhoneExport(out) {
   d.save();d.translate(311,56);d.fillStyle='#fff';d.fill(new Path2D('M8 4.2 20 1.6v13.5a3.6 3.6 0 1 1-2.2-3.3V4.7L10.2 6.4v11.4a3.6 3.6 0 1 1-2.2-3.3z'));d.restore();
   d.save();d.translate(350,56);d.strokeStyle='#fff';d.lineWidth=2.1;d.lineJoin='round';d.stroke(new Path2D('M19.87 8.54 L20.31 9.80 L22.80 9.92 L22.80 14.08 L20.31 14.20 L19.87 15.46 L20.02 15.12 L19.44 16.32 L21.11 18.17 L18.17 21.11 L16.32 19.44 L15.12 20.02 L15.46 19.87 L14.20 20.31 L14.08 22.80 L9.92 22.80 L9.80 20.31 L8.54 19.87 L8.88 20.02 L7.68 19.44 L5.83 21.11 L2.89 18.17 L4.56 16.32 L3.98 15.12 L4.13 15.46 L3.69 14.20 L1.20 14.08 L1.20 9.92 L3.69 9.80 L4.13 8.54 L3.98 8.88 L4.56 7.68 L2.89 5.83 L5.83 2.89 L7.68 4.56 L8.88 3.98 L8.54 4.13 L9.80 3.69 L9.92 1.20 L14.08 1.20 L14.20 3.69 L15.46 4.13 L15.12 3.98 L16.32 4.56 L18.17 2.89 L21.11 5.83 L19.44 7.68 L20.02 8.88Z M12 8.4a3.6 3.6 0 1 0 0 7.2a3.6 3.6 0 1 0 0-7.2Z'));d.restore();
 
-  d.save(); d.beginPath(); d.roundRect(37, 117, 315, 561, 21); d.clip(); d.drawImage(cv, 37, 117, 315, 561); d.restore();
-  d.strokeStyle = 'rgba(255,255,255,.2)'; d.lineWidth = 1; d.beginPath(); d.roundRect(37.5, 117.5, 314, 560, 20.5); d.stroke();
+  const multiStarExport=S.fx==='punchSymbols'&&S.params.punchSymbols?.motif==='多图星芒';
+  const effectBox=multiStarExport?{x:35,y:111,w:317,h:557,r:26}:{x:37,y:117,w:315,h:561,r:21};
+  d.save(); d.beginPath(); d.roundRect(effectBox.x,effectBox.y,effectBox.w,effectBox.h,effectBox.r); d.clip(); d.drawImage(cv,effectBox.x,effectBox.y,effectBox.w,effectBox.h); d.restore();
+  d.strokeStyle = 'rgba(255,255,255,.2)'; d.lineWidth = 1; d.beginPath(); d.roundRect(effectBox.x+.5,effectBox.y+.5,effectBox.w-1,effectBox.h-1,effectBox.r-.5); d.stroke();
   // Match the preview carousel: the narrow right edge is the dedicated peek
   // canvas, not a second crop of the active effect canvas.
-  d.save(); d.beginPath(); d.roundRect(376, 136, 14, 526, [14, 0, 0, 14]); d.clip(); d.globalAlpha = 1; d.drawImage($('#peek'), 376, 136, 100, 526); d.restore();
+  const peekBox=multiStarExport?{x:372.3,y:133.4,w:17.7,h:513.7,r:17.7}:{x:376,y:136,w:14,h:526,r:14};
+  d.save(); d.beginPath(); d.roundRect(peekBox.x,peekBox.y,peekBox.w,peekBox.h,[peekBox.r,0,0,peekBox.r]); d.clip(); d.globalAlpha = 1; d.drawImage($('#peek'),peekBox.x,peekBox.y,100,peekBox.h); d.restore();
 
   d.fillStyle = '#2c2c2e'; d.beginPath(); d.arc(90.5, 750.5, 23.5, 0, Math.PI * 2); d.fill();
   d.save();d.translate(79.5,739.5);d.fillStyle='#fff';d.fill(new Path2D('M4.6 15.3 14.9 5a2.3 2.3 0 0 1 3.2 3.2L7.8 18.5 3 19.8z'));d.globalAlpha=.9;d.beginPath();d.roundRect(3,20.6,16,1.4,.7);d.fill();d.restore();
@@ -4243,7 +4374,7 @@ async function exportPreviewVideo(seconds = 15) {
   if (!S.buffer) { openSheet('tracks'); toast('先选择一首音乐'); return; }
   if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { toast('当前浏览器不支持视频导出'); return; }
   setupGraph(); await ac().resume();
-  const restoreAt=songTime(),restorePlaying=S.playing;stopSource();S.playing=false;S.pausedAt=0;resetActiveEffectForExport();
+  const restoreAt=songTime(),restorePlaying=S.playing;stopSource();S.playing=false;S.pausedAt=0;resetAudioFeaturesForExport();resetActiveEffectForExport();
   // Export the complete phone composition. 780 x 1688 keeps the 390 x 844 UI
   // geometry exact while retaining the preview's visual quality.
   const exportCanvas = document.createElement('canvas');
@@ -4253,7 +4384,7 @@ async function exportPreviewVideo(seconds = 15) {
   // setInterval used to compete with the renderer and encoder, producing a
   // nominal 60fps file made from repeated or dropped frames.
   let stream;
-  const restorePlayback=()=>{stopSource();S.playing=false;S.pausedAt=restoreAt;resetActiveEffectForExport();if(restorePlaying)play(restoreAt);else setPlayIcon(false);};
+  const restorePlayback=()=>{stopSource();S.playing=false;S.pausedAt=restoreAt;resetAudioFeaturesForExport();resetActiveEffectForExport();if(restorePlaying)play(restoreAt);else setPlayIcon(false);};
   try { stream = exportCanvas.captureStream(30); }
   catch(err){restorePlayback();toast('无法捕获画布，请检查素材跨域权限');return;}
   const exportVideoTrack = stream.getVideoTracks()[0];
@@ -4344,9 +4475,10 @@ function buildPhotos() { const box = $('#photos'), fl = $('#filters');
   const up = document.createElement('button'); up.className = 'up'; up.textContent = '上传\n照片/视频'; up.style.whiteSpace = 'pre-line'; up.onclick = () => $('#photoFile').click(); box.appendChild(up);
   renderGallery();
   applyFilter(); }
-function applyFilter() { let n = PRESETS.filter(presetMatches).length; document.querySelectorAll('#photos button[data-lib]').forEach(b => { const show = curTag !== '熟人' && (curTag === '全部' || b.dataset.tags.split(',').includes(curTag)); b.classList.toggle('hide', !show); if (show) n++; }); const publicTotal = PRESETS.filter(d => !d.tags.includes('熟人')).length + LIB.photos.length, total = curTag === '熟人' ? PRESETS.filter(d => d.tags.includes('熟人')).length : publicTotal, label = (PRESETS[S.photoIdx]?.name || '本地素材') + ' · ' + n + '/' + total + ' 个', el = $('#photoCount'); el.textContent = label; el.title = label; if (S.fx === 'colorBars') FX.colorBars.updatePicker(); }
-function selectPhoto(i) { const d = PRESETS[i]; if(S.fx==='colorBars'){if(d.isVideo)return toast('交错色条请选择静态图片');FX.colorBars.choosePhoto('preset:'+i,S.params.colorBars);return;} document.querySelectorAll('#photos button').forEach(b => b.classList.toggle('on', +b.dataset.i === i)); if (d.isVideo) setVideo(d.src); else { const img = new Image(); img.onload = () => setImage(img); img.src = d.src; } S.photoIdx = i; applyFilter(); }
-$('#photoFile').onchange = async e => { const files = [...e.target.files]; if (!files.length) return; if(S.fx==='colorBars'){await FX.colorBars.upload(files,S.params.colorBars);e.target.value='';return;} await importFiles(files, 'photo'); const rec = LIB.photos[LIB.photos.length - 1]; if (rec) selectLib(rec); };
+function activeMultiPhotoVals(){if(S.fx==='colorBars')return S.params.colorBars;if(S.fx==='punchSymbols'&&S.params.punchSymbols?.motif==='多图星芒')return S.params.punchSymbols;return null;}
+function applyFilter() { let n = PRESETS.filter(presetMatches).length; document.querySelectorAll('#photos button[data-lib]').forEach(b => { const show = curTag !== '熟人' && (curTag === '全部' || b.dataset.tags.split(',').includes(curTag)); b.classList.toggle('hide', !show); if (show) n++; }); const publicTotal = PRESETS.filter(d => !d.tags.includes('熟人')).length + LIB.photos.length, total = curTag === '熟人' ? PRESETS.filter(d => d.tags.includes('熟人')).length : publicTotal, label = (PRESETS[S.photoIdx]?.name || '本地素材') + ' · ' + n + '/' + total + ' 个', el = $('#photoCount'); el.textContent = label; el.title = label; if (activeMultiPhotoVals()) FX.colorBars.updatePicker(); }
+function selectPhoto(i) { const d = PRESETS[i],vals=activeMultiPhotoVals(); if(vals){if(d.isVideo)return toast('多图效果请选择静态图片');FX.colorBars.choosePhoto('preset:'+i,vals);return;} document.querySelectorAll('#photos button').forEach(b => b.classList.toggle('on', +b.dataset.i === i)); if (d.isVideo) setVideo(d.src); else { const img = new Image(); img.onload = () => setImage(img); img.src = d.src; } S.photoIdx = i; applyFilter(); }
+$('#photoFile').onchange = async e => { const files = [...e.target.files]; if (!files.length) return; const vals=activeMultiPhotoVals();if(vals){await FX.colorBars.upload(files,vals);e.target.value='';return;} await importFiles(files, 'photo'); const rec = LIB.photos[LIB.photos.length - 1]; if (rec) selectLib(rec); };
 
 /* =====================================================================
    8. LOCAL LIBRARY — folder import, persisted in IndexedDB (this browser only)
@@ -4381,7 +4513,7 @@ function addLibItem(rec) {
   if (rec.kind === 'photo') { LIB.photos.push(rec); const box = $('#photos'), b = document.createElement('button'); b.dataset.lib = rec.id; b.dataset.tags = ['本地', rec.orientation || '竖图'].join(','); b.innerHTML = `<img src="${rec.thumb}" alt=""><span class="tag">${rec.isVideo ? '视频' : (rec.orientation || '本地')}</span><div class="n">${rec.name}</div>`; b.onclick = () => selectLib(rec); b.oncontextmenu = e => { e.preventDefault(); if (confirm('从本机素材库移除「' + rec.name + '」？')) { idbDel(rec.id); LIB.photos = LIB.photos.filter(x => x !== rec); b.remove(); applyFilter(); } }; box.insertBefore(b, box.children[1]); applyFilter(); }
   else { LIB.music.push(rec); renderLocalTracks(); }
 }
-function selectLib(rec) { if(S.fx==='colorBars'){if(rec.isVideo)return toast('交错色条请选择静态图片');FX.colorBars.choosePhoto(rec.id,S.params.colorBars);return;} document.querySelectorAll('#photos button').forEach(b => b.classList.toggle('on', b.dataset.lib === rec.id)); const url = URL.createObjectURL(rec.blob); if (rec.isVideo) setVideo(url); else { const img = new Image(); img.onload = () => setImage(img); img.src = url; } S.photoIdx = -1; const label = rec.name + ' · 本地', el = $('#photoCount'); el.textContent = label; el.title = label; }
+function selectLib(rec) { const vals=activeMultiPhotoVals();if(vals){if(rec.isVideo)return toast('多图效果请选择静态图片');FX.colorBars.choosePhoto(rec.id,vals);return;} document.querySelectorAll('#photos button').forEach(b => b.classList.toggle('on', b.dataset.lib === rec.id)); const url = URL.createObjectURL(rec.blob); if (rec.isVideo) setVideo(url); else { const img = new Image(); img.onload = () => setImage(img); img.src = url; } S.photoIdx = -1; const label = rec.name + ' · 本地', el = $('#photoCount'); el.textContent = label; el.title = label; }
 function renderLocalTracks() { const box = $('#tracks'); box.querySelectorAll('.local, .lgrp').forEach(x => x.remove()); if (!LIB.music.length) return;
   const g = document.createElement('div'); g.className = 'grp lgrp'; g.textContent = '本机音乐 · ' + LIB.music.length + ' 首（右键移除）'; box.insertBefore(g, box.firstChild);
   let ref = g.nextSibling;
@@ -4401,7 +4533,7 @@ $('#musicDir').onchange = e => importFiles(e.target.files, 'music');
 addEventListener('drop', async e => { const files = [...(e.dataTransfer?.files || [])]; if (!files.length) return;
   const audio = files.filter(f => f.type.startsWith('audio') || /\.(mp3|m4a|wav|aac|flac|ogg)$/i.test(f.name));
   const vis = files.filter(f => f.type.startsWith('image') || f.type.startsWith('video'));
-  if(vis.length&&S.fx==='colorBars')await FX.colorBars.upload(vis,S.params.colorBars);else if (vis.length) { await importFiles(vis, 'photo'); const r = LIB.photos[LIB.photos.length - 1]; if (r) selectLib(r); }
+  const vals=activeMultiPhotoVals();if(vis.length&&vals)await FX.colorBars.upload(vis,vals);else if (vis.length) { await importFiles(vis, 'photo'); const r = LIB.photos[LIB.photos.length - 1]; if (r) selectLib(r); }
   if (audio.length) { await importFiles(audio, 'music'); const r = LIB.music[LIB.music.length - audio.length]; if (r) loadTrack(r); } });
 
 
