@@ -1434,8 +1434,14 @@ window.createPunchCollageEffect=function({W,H,ctx,src,S,R,Sel,C,clamp}){
     draw(f,p,t){
       const dt=Math.min(.05,Math.max(0,t-(s.last??t)));s.last=t;if(S.playing)s.clock+=dt;
       const top=W,kind=Math.max(0,names.indexOf(p.motif)),color=p.groundMode==='自选颜色'?p.col:photoColor(),key=S.srcKey+'|'+p.count+'|'+kind;
+      // Scale the source once, not once per clipped particle (large photos can
+      // otherwise saturate the renderer while the video encoder is running).
+      if(!s.photo){s.photo=document.createElement('canvas');s.photo.width=s.photo.height=W;}
+      if(s.photoKey!==S.srcKey||s.photoMedia!==S.media||S.isVideo){
+        const g=s.photo.getContext('2d');g.clearRect(0,0,W,W);cover(g,S.media||src,0,0,W,W);s.photoKey=S.srcKey;s.photoMedia=S.media;
+      }
       if(s.key!==key){s.key=key;const random=i=>{const v=Math.sin(i*127.1+43.7)*43758.5453;return v-Math.floor(v);};s.points=Array.from({length:p.count},(_,i)=>({x:W*(.07+.86*random(i+1)),y:(i+random(i+79))/p.count*H,phase:i*2.399,r:.62+random(i+31)*.65}));}
-      ctx.save();ctx.beginPath();ctx.rect(0,0,W,top);ctx.clip();cover(ctx,S.media||src,0,0,W,top);ctx.restore();
+      ctx.drawImage(s.photo,0,0);
       ctx.fillStyle=color;ctx.fillRect(0,top,W,H-top);
       if(p.paper==='细织纹'){
         if(!s.weave){s.weave=document.createElement('canvas');s.weave.width=s.weave.height=48;const g=s.weave.getContext('2d');for(let y=0;y<48;y+=3)for(let x=0;x<48;x+=3){g.fillStyle=(x+y)%2?'rgba(255,255,255,.18)':'rgba(80,65,40,.055)';g.fillRect(x,y,1,2);}}
@@ -1473,7 +1479,7 @@ window.createPunchCollageEffect=function({W,H,ctx,src,S,R,Sel,C,clamp}){
         }
         for(const upper of [true,false]){ctx.save();ctx.beginPath();ctx.rect(0,upper?0:top,W,upper?top:H-top);ctx.clip();ctx.globalAlpha=twinkle;ctx.translate(x,y);
           if(upper)drawIcon(ctx,kind,0,0,r,color);
-          else{ctx.clip(shape(kind,r,false));cover(ctx,S.media||src,-x,-(y-top),W,top);}
+          else{ctx.clip(shape(kind,r,false));ctx.drawImage(s.photo,-x,top-y);}
           ctx.restore();
         }
       }
@@ -4126,7 +4132,10 @@ async function exportPreviewVideo(seconds = 15) {
   // Submit one frame from requestAnimationFrame at a stable 30fps. A 60Hz
   // setInterval used to compete with the renderer and encoder, producing a
   // nominal 60fps file made from repeated or dropped frames.
-  const stream = exportCanvas.captureStream(0);
+  let stream;
+  const restorePlayback=()=>{stopSource();S.playing=false;S.pausedAt=restoreAt;resetActiveEffectForExport();if(restorePlaying)play(restoreAt);else setPlayIcon(false);};
+  try { stream = exportCanvas.captureStream(30); }
+  catch(err){restorePlayback();toast('无法捕获画布，请检查素材跨域权限');return;}
   const exportVideoTrack = stream.getVideoTracks()[0];
   let exportAnimationFrame = 0, lastExportFrame = -Infinity;
   const audioTrack = recordDest?.stream.getAudioTracks()[0]; if (audioTrack) stream.addTrack(audioTrack);
@@ -4136,13 +4145,16 @@ async function exportPreviewVideo(seconds = 15) {
   const recorderOptions = { videoBitsPerSecond: 6000000, audioBitsPerSecond: 128000 };
   if (mimeType) recorderOptions.mimeType = mimeType;
   try { recorder = new MediaRecorder(stream, recorderOptions); }
-  catch (err) { toast('无法启动视频编码'); return; }
+  catch (err) { stream.getVideoTracks().forEach(t=>t.stop());restorePlayback();toast('无法启动视频编码'); return; }
   const chunks = [], button = $('#bigbtn'), status = $('#status');let started=0;
   exporting = true; button.classList.add('recording'); button.title = '正在导出视频';
+  let failed=false,finished=false,stopTimer=0,watchdog=0;
+  const cleanup=()=>{if(finished)return;finished=true;exporting=false;clearTimeout(stopTimer);clearTimeout(watchdog);cancelAnimationFrame(exportAnimationFrame);stream.getVideoTracks().forEach(t=>t.stop());button.classList.remove('recording');button.title='导出 15 秒视频';restorePlayback();};
+  const fail=()=>{failed=true;try{if(recorder.state!=='inactive')recorder.stop();}catch(e){}cleanup();status.textContent='导出失败，请重试';toast('视频导出失败，已恢复播放');};
   const submitExportFrame = now => {
     if (!exporting) return;
     if (now - lastExportFrame >= 1000 / 30 - 1) {
-      drawPhoneExport(exportCanvas);
+      try{drawPhoneExport(exportCanvas);}catch(err){fail();return;}
       exportVideoTrack.requestFrame?.();
       lastExportFrame = now;
     }
@@ -4150,8 +4162,10 @@ async function exportPreviewVideo(seconds = 15) {
   };
   exportAnimationFrame = requestAnimationFrame(submitExportFrame);
   recorder.ondataavailable = e => { if (e.data?.size) chunks.push(e.data); };
-  recorder.onerror = () => { exporting = false; button.classList.remove('recording'); status.textContent = '导出失败'; toast('视频导出失败'); };
+  recorder.onerror = fail;
   recorder.onstop = () => {
+    if(failed||finished)return;
+    if(!chunks.length){fail();return;}
     exporting = false; button.classList.remove('recording'); button.title = '导出 15 秒视频';
     cancelAnimationFrame(exportAnimationFrame);
     stream.getVideoTracks().forEach(t => t.stop());
@@ -4162,9 +4176,9 @@ async function exportPreviewVideo(seconds = 15) {
     const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = `${safe}.${ext}`; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 30000);
     status.textContent = '导出完成'; toast(`已导出 15 秒 ${ext.toUpperCase()} 视频`);
-    stopSource();S.playing=false;S.pausedAt=restoreAt;resetActiveEffectForExport();if(restorePlaying)play(restoreAt);else setPlayIcon(false);
+    cleanup();
   };
-  recorder.start(500);
+  try{recorder.start(500);}catch(err){fail();return;}
   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   play(0);started=performance.now();
   (function paint() {
@@ -4173,7 +4187,8 @@ async function exportPreviewVideo(seconds = 15) {
     status.textContent = `正在导出 · ${left.toFixed(1)}s`;
     requestAnimationFrame(paint);
   })();
-  setTimeout(() => { if (recorder.state !== 'inactive') recorder.stop(); }, seconds * 1000);
+  stopTimer=setTimeout(() => { try{if (recorder.state !== 'inactive') recorder.stop();}catch(err){fail();} }, seconds * 1000);
+  watchdog=setTimeout(()=>{if(!finished)fail();},(seconds+12)*1000);
 }
 $('#bigbtn').onclick = () => exportPreviewVideo(15);
 window.MFX_EXPORT = exportPreviewVideo;
