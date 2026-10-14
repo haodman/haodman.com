@@ -3,7 +3,7 @@
 Each track is declared in `library.json` and contains:
 
 - `audio`: MP3/M4A/WAV/OGG file relative to this directory.
-- `cover`: square JPEG cover. The current pack uses matched official release artwork sourced from Apple Music.
+- `cover`: square JPEG cover. Most catalog tracks use matched official release artwork; user-provided tracks may use a frame from the supplied video.
 - `lyrics`: UTF-8 LRC timeline.
 - `name`, `artist`, `genre`: display and effect metadata.
 
@@ -15,7 +15,7 @@ To add a track:
 4. Add one object to `library.json`.
 5. Run `python3 build.py` from `src/`.
 
-`build.py` embeds the test pack into `music-fx-lab.html`, so the HTML still works when opened directly from disk. Effects can read the active music data through:
+`build.py` embeds track metadata, covers, and lyrics into `music-fx-lab.html`; audio files stay lazy-loaded from `src/music/`. Effects can read the active music data through:
 
 ```js
 MFX_MUSIC.currentTrack()

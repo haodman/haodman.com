@@ -318,5 +318,18 @@
     "embed": false,
     "lyricsStatus": "provided",
     "source": "local-user-library"
+  },
+  {
+    "id": "wind-chime-atmosphere",
+    "name": "风铃氛围",
+    "artist": "用户素材",
+    "genre": "Ambient / Wind Chime",
+    "duration": 8.08,
+    "audio": "wind-chime-atmosphere.mp3",
+    "cover": "covers/wind-chime-atmosphere.jpg",
+    "lyrics": "lyrics/wind-chime-atmosphere.lrc",
+    "embed": false,
+    "lyricsStatus": "instrumental",
+    "source": "user-provided-video"
   }
 ]

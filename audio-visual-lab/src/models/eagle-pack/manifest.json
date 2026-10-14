@@ -1,4 +1,18 @@
 [
+  {"name":"峡谷全身 · 竖版","tags":["竖图","全身","户外","小主体"],"src":"src/models/eagle-pack/r07qxo-197-restore.png","thumb":"src/models/eagle-pack/r07qxo-197-restore-thumb.jpg"},
+  {"name":"粉发泳池 · 仰望","tags":["竖图","半身","户外"],"src":"src/models/eagle-pack/r07qxo-113.jpg","thumb":"src/models/eagle-pack/r07qxo-113-thumb.jpg"},
+  {"name":"粉发泳池 · 侧身","tags":["竖图","半身","户外","小主体"],"src":"src/models/eagle-pack/r07qxo-118.jpg","thumb":"src/models/eagle-pack/r07qxo-118-thumb.jpg"},
+  {"name":"粉发夜间自拍","tags":["竖图","自拍","半身","夜景","户外"],"src":"src/models/eagle-pack/r07qxo-93.jpg","thumb":"src/models/eagle-pack/r07qxo-93-thumb.jpg"},
+  {"name":"粉发露台饮品","tags":["竖图","全身","户外"],"src":"src/models/eagle-pack/r07qxo-104.jpg","thumb":"src/models/eagle-pack/r07qxo-104-thumb.jpg"},
+  {"name":"粉发车内条纹衫","tags":["竖图","自拍","半身","室内"],"src":"src/models/eagle-pack/r07qxo-96.jpg","thumb":"src/models/eagle-pack/r07qxo-96-thumb.jpg"},
+  {"name":"红帽地铁长椅","tags":["竖图","全身","室内","小主体"],"src":"src/models/eagle-pack/r07qxo-5.jpg","thumb":"src/models/eagle-pack/r07qxo-5-thumb.jpg"},
+  {"name":"红帽画廊镜拍","tags":["竖图","自拍","半身","室内"],"src":"src/models/eagle-pack/r07qxo-157.jpg","thumb":"src/models/eagle-pack/r07qxo-157-thumb.jpg"},
+  {"name":"红帽画廊远景","tags":["竖图","全身","室内","小主体"],"src":"src/models/eagle-pack/r07qxo-156.jpg","thumb":"src/models/eagle-pack/r07qxo-156-thumb.jpg"},
+  {"name":"峡谷全身 · 方图","tags":["方图","全身","户外","小主体"],"src":"src/models/eagle-pack/r07qxo-197.jpg","thumb":"src/models/eagle-pack/r07qxo-197-thumb.jpg"},
+  {"name":"峡谷背影","tags":["方图","全身","户外","小主体"],"src":"src/models/eagle-pack/r07qxo-175.jpg","thumb":"src/models/eagle-pack/r07qxo-175-thumb.jpg"},
+  {"name":"咖啡店全身男生","tags":["竖图","全身","室内","小主体"],"src":"src/models/eagle-pack/r07qxo-171.jpg","thumb":"src/models/eagle-pack/r07qxo-171-thumb.jpg"},
+  {"name":"粉发格衫街拍","tags":["竖图","全身","户外"],"src":"src/models/eagle-pack/r07qxo-140.jpg","thumb":"src/models/eagle-pack/r07qxo-140-thumb.jpg"},
+  {"name":"红帽列车街拍","tags":["竖图","全身","室内","小主体"],"src":"src/models/eagle-pack/r07qxo-149.jpg","thumb":"src/models/eagle-pack/r07qxo-149-thumb.jpg"},
   {
     "name": "蓝帽耳机自拍",
     "tags": [
