@@ -130,7 +130,7 @@ svg text{font-family:inherit}
   </div>
 
   <section>
-    <h2>用户在做什么 <span class="i" data-tip="1,000 条线上抽样，9/4–9/21，按指令数。使用率 = 生成后发送 / 下载 / 存为表情；绿色 ≥ 70%，红色 < 58%。">i</span></h2>
+    <h2>用户在做什么 <span class="i" data-tip="997 条线上抽样，9/4–9/21，逐条人工标注，按首轮意图归入 12 类玩法。使用率 = 生成后发送 / 保存 / 下载；绿色 ≥ 70%，红色 < 58%。">i</span></h2>
     <div class="cats" id="cats"></div>
     <div class="note">红色使用率 ≥ 70%，灰色 &lt; 58%。<b>文字配文、人物外观、动作关系</b>做完更愿意发；<b>纠错恢复、开放式指令、风格转换</b>是效果缺口。</div>
   </section>
@@ -167,8 +167,8 @@ const ENTRIES=[
  ['生成卡片右侧 Remix','generation_card_right_remix',350865,11472,true]
 ];
 const CATS={
- img:{t:'有参考图 79.5%',rows:[['人物外观、表情、体型',441,28.6,71.0],['多图合成、换脸',266,17.3,68.0],['局部增删替换',257,16.7,68.9],['动作、场景、关系',251,16.3,70.9],['文字、配文、改字',150,9.7,79.3],['纠错、恢复',134,8.7,59.0],['开放式、模糊指令',92,6.0,56.5],['名人、IP',85,5.5,61.2],['变身、角色化',67,4.3,56.7],['风格化',37,2.4,62.2]]},
- noimg:{t:'无参考图 20.5%',rows:[['人物外观、表情、体型',93,23.1,60.2],['动作、场景、关系',71,17.7,56.3],['文字、口头禅、配文',51,12.7,78.4],['名人、IP',46,11.4,56.5],['局部追加编辑',23,5.7,60.9],['纠错、恢复',16,4.0,50.0],['风格、媒介转换',7,1.7,28.6],['变身、角色化',5,1.2,60.0],['开放式、极简指令',4,1.0,25.0]]}
+ img:{t:'有参考图 79% · 792 条',rows:[["多图合成", 160, 20.2, 67.5], ["文字创作", 137, 17.3, 73.0], ["恶搞整蛊", 127, 16.0, 72.4], ["图片编辑", 123, 15.5, 64.2], ["无明确意图", 87, 11.0, 57.5], ["自由创作", 62, 7.8, 51.6], ["名人 IP", 32, 4.0, 65.6], ["变身与变角色", 26, 3.3, 69.2], ["主体编辑", 17, 2.1, 76.5], ["风格化编辑", 15, 1.9, 73.3], ["情绪/问候表达", 6, 0.8, 66.7]]},
+ noimg:{t:'无参考图 21% · 205 条',rows:[["文字创作", 75, 36.6, 72.0], ["自由创作", 54, 26.3, 64.8], ["名人 IP", 33, 16.1, 51.5], ["恶搞整蛊", 17, 8.3, 47.1], ["情绪/问候表达", 16, 7.8, 68.8], ["图片编辑", 4, 2.0, 25.0], ["无明确意图", 2, 1.0, 50.0], ["变身与变角色", 1, 0.5, 100.0], ["多图合成", 1, 0.5, 100.0], ["主体编辑", 1, 0.5, 100.0], ["风格化编辑", 1, 0.5, 0.0]]}
 };
 const sum=(a,i0,i1)=>{let s=0;for(let i=i0;i<=i1;i++)s+=a[i];return s};
 const fmt=n=>n>=1e4?(n/1e4).toFixed(n>=1e5?0:1)+' 万':Math.round(n).toLocaleString();
@@ -250,8 +250,8 @@ function drawTrend(){const m=METRICS[mi];lineChart($('#trend'),m.series.map(s=>(
 function drawSend(){lineChart($('#sendTypes'),[{n:'AI Image',f:i=>S.sendImg[i],c:'var(--blue)'},{n:'AI Sticker',f:i=>S.sendSticker[i],c:'var(--acc)'}],{id:'sd',h:210,w:420,area:true});}
 // cats
 $('#cats').innerHTML=['img','noimg'].map(k=>{const c=CATS[k];const mx=Math.max(...c.rows.map(r=>r[2]));
-  return `<div class="cat"><div class="t">${c.t}</div><div class="row h"><div>创作类型</div><div>占比</div><div class="p">指令</div><div class="u">使用率</div></div>`+
-  c.rows.map(r=>`<div class="row"><div>${r[0]}</div><div class="bar"><i style="width:${100*r[2]/mx}%"></i></div><div class="p">${r[2]}%</div><div class="u ${r[3]>=70?'hi':r[3]<58?'lo':''}">${r[3].toFixed(0)}%</div></div>`).join('')+'</div>';}).join('');
+  return `<div class="cat"><div class="t">${c.t}</div><div class="row h"><div>玩法</div><div>占比</div><div class="p">条数</div><div class="u">使用率</div></div>`+
+  c.rows.map(r=>`<div class="row"><div>${r[0]}</div><div class="bar"><i style="width:${100*r[2]/mx}%"></i></div><div class="p">${r[1]}</div><div class="u ${r[1]<5?'':r[3]>=70?'hi':r[3]<58?'lo':''}" style="${r[1]<5?'color:var(--mute)':''}">${r[1]<5?'–':r[3].toFixed(0)+'%'}</div></div>`).join('')+'</div>';}).join('');
 setRange(0,N-1,'all');
 })();
 </script>

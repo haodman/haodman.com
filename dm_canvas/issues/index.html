@@ -192,8 +192,8 @@ $('#stats').innerHTML=[
 const ORDER_IMG=['恶搞整蛊','多图合成','图片编辑','文字创作','主体编辑','风格化编辑','变身与变角色','名人 IP','情绪/问候表达','自由创作','无明确意图'];
 const ORDER_NO=ORDER_IMG;
 let catSel=null,probSel=null,fImg='',fUse='',fR='',shown=48;
-function catTiles(el,order,pool,total){el.innerHTML=order.map(k=>{const a=pool.filter(c=>c.cat===k);if(!a.length)return '';const u=100*a.filter(c=>c.use).length/a.length;const th=a.filter(c=>c.gen.length).slice(0,3).map(c=>`<img src="${img(c.gen[0])}" alt="" loading="lazy">`).join('');
-  return `<div class="cat ${catSel===k?'on':''}" data-k="${k}"><div class="th">${th}</div><div class="n">${k}</div><div class="m"><b>${pct(a.length,total)}</b><span>${a.length} 条</span></div><div class="m2">使用率 <b class="u ${u>=70?'hi':u<58?'lo':''}">${u.toFixed(0)}%</b></div></div>`}).join('');
+function catTiles(el,order,pool,total){order=order.slice().sort((x,y)=>pool.filter(c=>c.cat===y).length-pool.filter(c=>c.cat===x).length);el.innerHTML=order.map(k=>{const a=pool.filter(c=>c.cat===k);if(!a.length)return '';const u=100*a.filter(c=>c.use).length/a.length;const th=a.filter(c=>c.gen.length).slice(0,3).map(c=>`<img src="${img(c.gen[0])}" alt="" loading="lazy">`).join('');
+  return `<div class="cat ${catSel===k?'on':''}" data-k="${k}"><div class="th">${th}</div><div class="n">${k}</div><div class="m"><b>${pct(a.length,total)}</b><span>${a.length} 条</span></div><div class="m2">使用率 <b class="u ${a.length<5?'':u>=70?'hi':u<58?'lo':''}">${a.length<5?'–':u.toFixed(0)+'%'}</b></div></div>`}).join('');
   el.querySelectorAll('.cat').forEach(t=>t.onclick=()=>{catSel=catSel===t.dataset.k?null:t.dataset.k;shown=48;renderAll();});}
 function renderCats(){const im=C.filter(c=>c.img),no=C.filter(c=>!c.img);
   $('#gImg').textContent=`${pct(im.length,C.length)} · ${im.length} 条 · 使用率 ${useRate(im)}`;$('#gNo').textContent=`${pct(no.length,C.length)} · ${no.length} 条 · 使用率 ${useRate(no)}`;
