@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DM Canvas · 创作漏斗（上线以来）</title>
+<style>
+:root{--bg:#F2F2F7;--card:#FFFFFF;--ink:#000000;--ink2:#3C3C43;--mute:#8E8E93;--line:rgba(60,60,67,.12);--fill:rgba(120,120,128,.12);--bg2:#FFFFFF;
+--blue:#007AFF;--blue2:#E5F0FF;--acc:#FF3B30;--acc2:#FFE5E3;--ok:#34C759;--amber:#FF9500;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--card:#1C1C1E;--bg2:#1C1C1E;--ink:#FFF;--ink2:#EBEBF5;--line:rgba(84,84,88,.6);--fill:rgba(120,120,128,.24);--blue:#0A84FF;--blue2:#0E2A4A;--acc:#FF453A;--acc2:#4A1A26;--ok:#30D158;--amber:#FF9F0A;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#000;--card:#1C1C1E;--bg2:#1C1C1E;--ink:#FFF;--ink2:#EBEBF5;--line:rgba(84,84,88,.6);--fill:rgba(120,120,128,.24);--blue:#0A84FF;--blue2:#0E2A4A;--acc:#FF453A;--acc2:#4A1A26;--ok:#30D158;--amber:#FF9F0A}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro SC","PingFang SC","Helvetica Neue","Noto Sans SC",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding:40px 20px 80px}
+h1{font-size:34px;font-weight:700;letter-spacing:-.02em;margin:0 0 4px}
+.sub{color:var(--mute);font-size:15px;margin:0 0 20px}
+section{margin:0 0 36px}
+h2{font-size:22px;font-weight:700;letter-spacing:-.01em;margin:0 0 12px;display:flex;align-items:center;gap:6px}
+h2 small{display:none}
+.i{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--mute);color:var(--mute);font-size:10px;font-weight:700;font-style:normal;cursor:default;position:relative;vertical-align:middle;flex:none}
+.i:hover::after{content:attr(data-tip);position:absolute;left:0;top:22px;background:var(--card);color:var(--ink2);font-size:12.5px;font-weight:400;line-height:1.45;padding:10px 12px;border-radius:12px;width:max-content;max-width:320px;white-space:normal;box-shadow:0 8px 30px rgba(0,0,0,.18);z-index:9}
+.panel{background:var(--card);border-radius:18px;padding:20px 22px}
+.note{display:none}
+svg text{font-family:inherit}
+.tip{position:absolute;pointer-events:none;background:rgba(28,28,30,.92);color:#fff;font-size:12px;padding:8px 11px;border-radius:10px;white-space:nowrap;display:none;z-index:2;line-height:1.55;backdrop-filter:blur(8px)}
+.chart{position:relative}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--ink2);flex-wrap:wrap;margin-top:10px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.range{display:flex;align-items:center;gap:16px;background:var(--card);border-radius:16px;padding:12px 18px;margin-bottom:14px;flex-wrap:wrap}
+.range .lbl{font-size:14px;color:var(--ink2);min-width:190px}
+.range .lbl b{color:var(--ink);font-weight:600}
+.slider{position:relative;flex:1;min-width:220px;height:28px}
+.slider input[type=range]{position:absolute;left:0;right:0;top:0;width:100%;height:28px;margin:0;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:pointer}
+.slider input[type=range]::-moz-range-thumb{pointer-events:auto;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25);border:0;cursor:pointer}
+.slider .track{position:absolute;left:0;right:0;top:12px;height:4px;background:var(--fill);border-radius:2px}
+.slider .fill{position:absolute;top:12px;height:4px;background:var(--blue);border-radius:2px}
+.range .presets{display:flex;gap:2px;background:var(--fill);padding:2px;border-radius:9px}
+.range button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--ink);border-radius:7px;padding:5px 11px;cursor:pointer}
+.range button.on{background:var(--card);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:36px}
+.kpi{padding:16px 16px 14px;border-radius:16px;background:var(--card)}
+.kpi .v{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.kpi.acc .v{color:var(--acc)}
+.kpi .k{font-size:13px;color:var(--ink);margin-top:8px;font-weight:500}
+.kpi .d{font-size:12px;color:var(--mute);margin-top:2px;line-height:1.3}
+.tabs{display:inline-flex;gap:2px;background:var(--fill);padding:2px;border-radius:9px;margin:0 0 12px}
+.tabs button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--ink);border-radius:7px;padding:5px 12px;cursor:pointer}
+.tabs button.on{background:var(--card);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid2 section{margin:0}
+.bars .row{display:grid;grid-template-columns:175px 1fr 56px;align-items:center;gap:12px;font-size:13px;padding:7px 0}
+.bars .bar{height:8px;background:var(--fill);border-radius:4px;overflow:hidden}
+.bars .bar i{display:block;height:100%;background:var(--blue);border-radius:4px}
+.bars .row.acc .bar i{background:var(--acc)}
+.bars .row .n{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.bars .row .lab{color:var(--ink2)}
+.bars .row .lab small{color:var(--mute);margin-left:6px}
+.cats{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cat{background:var(--card);border-radius:18px;padding:18px 20px}
+.cat .row{display:grid;grid-template-columns:132px 1fr 44px 48px;gap:10px;align-items:center;font-size:13px;padding:5px 0}
+.cat .row.h{color:var(--mute);font-size:12px;padding-bottom:8px}
+.cat .bar{height:7px;background:var(--fill);border-radius:4px;overflow:hidden}
+.cat .bar i{display:block;height:100%;background:var(--blue);border-radius:4px}
+.cat .u{text-align:right;font-variant-numeric:tabular-nums}
+.cat .u.hi{color:var(--ok);font-weight:600}
+.cat .u.lo{color:var(--acc)}
+.cat .p{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink2)}
+.cat .t{font-weight:700;font-size:16px;margin-bottom:8px}
+@media (max-width:760px){.kpis{grid-template-columns:repeat(3,1fr)}.grid2,.cats{grid-template-columns:1fr}.range .lbl{min-width:0}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.fun{padding:4px 0}
+.fr{display:grid;grid-template-columns:110px 1fr 70px;align-items:center;gap:14px}
+.fl{font-size:14px;color:var(--ink2)}
+.fb{height:34px;background:var(--fill);border-radius:9px;overflow:hidden}
+.fb i{display:block;height:100%;background:var(--blue);border-radius:9px}
+.fb i.acc{background:var(--acc)}
+.fv{font-size:18px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.fc{display:flex;align-items:center;gap:6px;height:30px;padding-left:124px;font-size:12px;color:var(--mute)}
+.fc:before{content:'↓';font-size:13px}
+.fc b{color:var(--ink);font-weight:600;font-size:13px}
+.fc.acc b{color:var(--acc)}
+.ft{font-size:12px;color:var(--mute);margin-top:12px;padding-left:124px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>DM Canvas 创作漏斗</h1>
+  <p class="sub">RoW · 9/3 上线至 10/13 · 按日 <span class="i" data-tip="口径为 Tea 看板事件次数（PV，含抽样）。10/9 之后离线数据产出延迟，数值可能回补。">i</span></p>
+
+  <div class="range">
+    <div class="lbl">时间范围 <b id="rangeLbl"></b> <span id="rangeDays" style="color:var(--mute)"></span></div>
+    <div class="slider">
+      <div class="track"></div><div class="fill" id="fill"></div>
+      <input type="range" id="r0" min="0" max="40" value="0"><input type="range" id="r1" min="0" max="40" value="40">
+    </div>
+    <div class="presets">
+      <button data-p="all" class="on">上线以来</button><button data-p="q3">Q3 Review 窗口</button><button data-p="pe">PE 更新后</button><button data-p="7">近 7 天</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section>
+    <h2>创作链路 <span class="i" data-tip="红色为效果相关环节：生成成功率受安全 / IP 拦截影响，生成→发送反映效果满意度。提交与发起之间的差值来自多轮修改与重试。">i</span></h2>
+    <div class="panel"><div class="chart" id="funnel"></div></div>
+    <div class="note">红色为效果相关环节：<b>生成成功率</b>受安全 / IP 拦截影响，<b>生成→发送</b>反映效果满意度。提交与发起之间的差值来自多轮修改与重试。</div>
+  </section>
+
+  <section>
+    <h2>趋势 <span class="i" data-tip="成功率 = 生成成功 / 发起生成；发送率 = 发送 / 生成成功；提交含图 = 带图提交 / 全部提交。右侧为所选区间末日数值。拖动上方时间轴缩放，灰底为离线数据延迟区间。">i</span></h2>
+    <div class="tabs" id="tabs"></div>
+    <div class="panel"><div class="chart" id="trend"><div class="tip" id="tip"></div></div></div>
+    <div class="legend" id="trendLegend"></div>
+  </section>
+
+  <div class="grid2">
+    <section>
+      <h2>入口曝光 → 点击 <span class="i" data-tip="UV 转化率，上线以来累计。生成结果右侧 Remix 曝光量大但点击率仅 3.3%：接力意愿强、入口不显眼。">i</span></h2>
+      <div class="panel"><div class="bars" id="entries"></div></div>
+      <div class="note">生成结果右侧 Remix 曝光量大但点击率仅 3.3%，接力意愿强、入口不显眼。</div>
+    </section>
+    <section>
+      <h2>发送内容类型 <span class="i" data-tip="发送次数，按日。贴纸复用率高：9 千人发了 12 万次，人均 13 次；AI 图片 6.7 万人发了 12.6 万次。">i</span></h2>
+      <div class="panel"><div class="chart" id="sendTypes"></div></div>
+      <div class="legend" style="margin-top:12px"><span><i style="background:var(--blue)"></i>AI Image</span><span><i style="background:var(--acc)"></i>AI Sticker</span></div>
+      <div class="note">贴纸复用率高：9 千人发了 12 万次，人均 13 次；AI 图片 6.7 万人发了 12.6 万次。</div>
+    </section>
+  </div>
+
+  <section>
+    <h2>用户在做什么 <span class="i" data-tip="1,000 条线上抽样，9/4–9/21，按指令数。使用率 = 生成后发送 / 下载 / 存为表情；绿色 ≥ 70%，红色 < 58%。">i</span></h2>
+    <div class="cats" id="cats"></div>
+    <div class="note">红色使用率 ≥ 70%，灰色 &lt; 58%。<b>文字配文、人物外观、动作关系</b>做完更愿意发；<b>纠错恢复、开放式指令、风格转换</b>是效果缺口。</div>
+  </section>
+</div>
+
+<script>
+(function(){
+const D0=new Date(Date.UTC(2026,8,3));
+const N=41;
+const dates=[...Array(N)].map((_,i)=>{const d=new Date(D0.getTime()+i*864e5);return (d.getUTCMonth()+1)+'/'+d.getUTCDate();});
+// daily PV series, Tea 看板 2026-09-03 → 2026-10-13
+const S={
+enter:[32099,33954,33848,33400,29491,29678,30259,28907,28154,30450,30501,32764,30389,29764,29755,29218,31632,32706,31000,32380,32932,35931,36507,35034,34692,35822,35370,34069,33424,31642,29883,29350,29231,29172,28747,29426,28961,29623,29312,28069,26574],
+submit:[13631,12192,10374,10188,8879,8766,8894,8209,7194,7494,8159,8593,7707,7738,7534,6645,7542,8234,7560,8161,8143,8686,8752,8503,8690,9205,8947,8299,8053,7672,6943,6760,6575,6860,6464,7151,6821,6949,6796,6447,5583],
+start:[14208,12630,10734,10513,9207,9092,9206,8394,7326,7754,8252,8844,7942,8026,7812,6820,7706,8436,7755,8518,8319,8993,9124,8811,9020,9624,9221,8563,8373,7755,7182,7045,6940,7256,6854,7594,7367,7410,7195,6940,6071],
+ok:[11045,9176,8393,8213,7208,7129,7306,6610,5577,5718,6263,6850,6099,6225,6145,5339,6067,6636,5980,7205,6955,7514,7414,7268,7597,7910,7629,7152,6869,6330,5954,5758,5583,5961,5653,6158,5930,6000,5850,5587,4702],
+fail:[3177,3481,2413,2351,2041,2001,1915,1793,1777,2052,1993,2036,1876,1858,1693,1515,1648,1815,1799,1339,1391,1523,1746,1577,1463,1793,1637,1458,1578,1456,1257,1373,1522,1347,1352,1506,1490,1456,1401,1409,1432],
+send:[5828,5064,4381,4336,3814,3683,3834,3421,3128,2881,3194,3596,3162,3253,3118,2739,3195,3390,3203,3813,3663,4031,4131,3964,4486,4357,4307,4031,3908,3643,3761,3340,3547,3631,3389,3626,4100,3807,4222,3956,3376],
+sendAfterOk:[5720,4986,4324,4251,3761,3627,3783,3384,3087,2841,3164,3549,3124,3195,3087,2710,3148,3327,3163,3781,3605,3927,4053,3911,4377,4297,4238,3976,3864,3602,3701,3315,3512,3589,3364,3574,4068,3775,4181,3938,3337],
+withImg:[3729,3891,3489,3583,3474,3281,3253,3098,2831,3055,3324,3601,3221,3225,3268,2856,3337,3625,3388,3732,3748,4441,4623,4406,4692,4811,4823,4367,4222,3987,3677,3556,3516,3572,3498,3827,3565,3724,3826,3461,2952],
+hintShow:[69762,71722,68145,66760,59111,59279,59992,53909,55811,62314,62264,68500,62692,60973,61424,59981,64559,66366,63133,65257,64940,72361,76768,70187,68984,71693,71752,68399,66206,62700,59073,58329,57993,57995,56707,58361,57587,59553,57967,55466,51448],
+hintClick:[2485,2360,1717,1634,1637,1585,1651,1643,1502,1325,1379,1644,1528,1484,1496,1230,1290,1506,1397,1288,2474,2298,1979,1366,1265,1427,1284,1149,1183,1038,1072,948,997,961,954,1100,1097,1009,1019,1016,899],
+sendImg:[5528,4757,4159,4044,3461,3420,3518,3022,2805,2629,2848,3139,2817,2874,2733,2331,2831,2934,2728,3386,3201,3481,3313,3116,3592,3427,3421,3101,3017,2882,2779,2471,2500,2701,2446,2718,2441,2408,2754,2315,2007],
+sendSticker:[1591,2111,1713,2650,2703,2373,1966,2808,1975,2150,2406,2869,2259,2387,3464,3092,3087,2579,3808,3093,3026,3242,3857,2868,3534,3345,3365,4411,3406,2830,3525,2286,2387,3129,4054,3245,3780,3399,3204,2884,3086],
+saSticker:[324,393,253,450,365,314,304,369,348,401,581,607,503,553,596,538,583,676,653,659,691,649,630,712,641,743,719,725,779,581,569,576,587,544,575,671,665,672,497,526,402]
+};
+// 入口曝光/点击 UV 累计（上线以来，无按日拆分）
+const ENTRIES=[
+ ['生成结果操作栏','generation_action_bar',136383,79791],
+ ['AI 图片详情 Remix','ai_image_detail_remix',41663,5938],
+ ['Chat spark 固定入口','chat_spark_icon',4746549,631772],
+ ['创作历史页 Create','history_create_icon',16180,1628],
+ ['SA 贴纸面板','social_avatar_sticker_panel',217455,9497],
+ ['生成卡片右侧 Remix','generation_card_right_remix',350865,11472,true]
+];
+const CATS={
+ img:{t:'有参考图 79.5%',rows:[['人物外观、表情、体型',441,28.6,71.0],['多图合成、换脸',266,17.3,68.0],['局部增删替换',257,16.7,68.9],['动作、场景、关系',251,16.3,70.9],['文字、配文、改字',150,9.7,79.3],['纠错、恢复',134,8.7,59.0],['开放式、模糊指令',92,6.0,56.5],['名人、IP',85,5.5,61.2],['变身、角色化',67,4.3,56.7],['风格化',37,2.4,62.2]]},
+ noimg:{t:'无参考图 20.5%',rows:[['人物外观、表情、体型',93,23.1,60.2],['动作、场景、关系',71,17.7,56.3],['文字、口头禅、配文',51,12.7,78.4],['名人、IP',46,11.4,56.5],['局部追加编辑',23,5.7,60.9],['纠错、恢复',16,4.0,50.0],['风格、媒介转换',7,1.7,28.6],['变身、角色化',5,1.2,60.0],['开放式、极简指令',4,1.0,25.0]]}
+};
+const sum=(a,i0,i1)=>{let s=0;for(let i=i0;i<=i1;i++)s+=a[i];return s};
+const fmt=n=>n>=1e4?(n/1e4).toFixed(n>=1e5?0:1)+' 万':Math.round(n).toLocaleString();
+const pct=(a,b)=>b?(100*a/b).toFixed(1)+'%':'–';
+const $=s=>document.querySelector(s);
+let i0=0,i1=N-1;
+const r0=$('#r0'),r1=$('#r1');
+function setRange(a,b,preset){i0=Math.min(a,b);i1=Math.max(a,b);r0.value=i0;r1.value=i1;
+  $('#fill').style.left=(i0/(N-1)*100)+'%';$('#fill').style.right=(100-i1/(N-1)*100)+'%';
+  $('#rangeLbl').textContent=dates[i0]+' – '+dates[i1];$('#rangeDays').textContent='('+(i1-i0+1)+' 天)';
+  document.querySelectorAll('.presets button').forEach(b=>b.classList.toggle('on',b.dataset.p===preset));
+  render();}
+r0.oninput=()=>setRange(+r0.value,+r1.value);r1.oninput=()=>setRange(+r0.value,+r1.value);
+document.querySelectorAll('.presets button').forEach(b=>b.onclick=()=>{const p=b.dataset.p;
+  if(p==='all')setRange(0,N-1,p);else if(p==='q3')setRange(6,19,p);else if(p==='pe')setRange(20,N-1,p);else setRange(N-7,N-1,p);});
+
+function render(){
+  const T={};for(const k in S)T[k]=sum(S[k],i0,i1);
+  // KPIs
+  const k=[
+   ['进入画布',fmt(T.enter),'次'],
+   ['进入 → 提交',pct(T.submit,T.enter),'创作率'],
+   ['生成成功率',pct(T.ok,T.start),'失败 '+fmt(T.fail)+' 次','acc'],
+   ['生成 → 发送',pct(T.send,T.ok),'目标 65%','acc'],
+   ['提交含图比例',pct(T.withImg,T.submit),'上传或 Remix'],
+   ['推荐 prompt 点击',pct(T.hintClick,T.hintShow),'曝光 '+fmt(T.hintShow)+' 次']
+  ];
+  $('#kpis').innerHTML=k.map(x=>`<div class="kpi ${x[3]||''}"><div class="v">${x[1]}</div><div class="k">${x[0]}</div><div class="d">${x[2]}</div></div>`).join('');
+  // funnel
+  const steps=[['进入画布',T.enter,'创作率'],['提交 prompt',T.submit,'重试 / 多轮'],['发起生成',T.start,'成功率'],['生成成功',T.ok,'发送率'],['发送到聊天',T.send,'']];
+  const mx=steps[0][1];
+  $('#funnel').innerHTML='<div class="fun">'+steps.map((s,i)=>{const acc=i>=3;const w=Math.max(3,100*s[1]/mx);const next=steps[i+1];
+    const conv=next?`<div class="fc ${i>=2?'acc':''}"><span>${s[2]}</span><b>${pct(next[1],s[1])}</b></div>`:'';
+    return `<div class="fr"><div class="fl">${s[0]}</div><div class="fb"><i class="${acc?'acc':''}" style="width:${w}%"></i></div><div class="fv">${fmt(s[1])}</div></div>${conv}`;}).join('')+`<div class="ft">全链路 ${pct(T.send,T.enter)}</div></div>`;
+  // entries
+  $('#entries').innerHTML=ENTRIES.map(e=>`<div class="row ${e[4]?'acc':''}"><div class="lab">${e[0]}<small>曝光 ${fmt(e[2])}</small></div><div class="bar"><i style="width:${Math.min(100,100*e[3]/e[2])}%"></i></div><div class="n">${pct(e[3],e[2])}</div></div>`).join('');
+  drawTrend();drawSend();
+}
+// trend
+const METRICS=[
+ {id:'rate',name:'成功率与发送率',series:[['生成成功率',(i)=>S.ok[i]/S.start[i],'var(--acc)'],['生成→发送',(i)=>S.send[i]/S.ok[i],'var(--blue)'],['提交含图',(i)=>S.withImg[i]/S.submit[i],'var(--mute)']],pct:true},
+ {id:'vol',name:'每日次数',series:[['进入画布',(i)=>S.enter[i],'var(--mute)'],['提交 prompt',(i)=>S.submit[i],'var(--blue)'],['生成成功',(i)=>S.ok[i],'var(--acc)'],['发送',(i)=>S.send[i],'var(--ok)']]},
+ {id:'conv',name:'链路转化',series:[['进入→提交',(i)=>S.submit[i]/S.enter[i],'var(--blue)'],['提交→成功',(i)=>S.ok[i]/S.submit[i],'var(--acc)'],['推荐 prompt 点击率',(i)=>S.hintClick[i]/S.hintShow[i],'var(--amber)']],pct:true},
+ {id:'fail',name:'失败与贴纸',series:[['生成失败次数',(i)=>S.fail[i],'var(--acc)'],['SA 贴纸生成',(i)=>S.saSticker[i],'var(--blue)'],['存为贴纸(保存)',(i)=>S.sendSticker[i],'var(--mute)']]}
+];
+let mi=0;
+$('#tabs').innerHTML=METRICS.map((m,i)=>`<button class="${i===0?'on':''}" data-i="${i}">${m.name}</button>`).join('');
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{mi=+b.dataset.i;document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));drawTrend();});
+const ANN=[[20,'9/23 PE 更新'],[36,'10/9 起数据延迟']];
+function lineChart(el,seriesList,opts){
+  const W=opts.w||924,H=opts.h||300,L=44,R=opts.endLabel?64:12,Tp=22,B=30;
+  const n=i1-i0+1;const xs=i=>L+(W-L-R)*(n===1?0.5:(i-i0)/(n-1));
+  let vals=[];seriesList.forEach(s=>{for(let i=i0;i<=i1;i++)vals.push(s.f(i));});
+  let mn=opts.pct?Math.max(0,Math.floor(Math.min(...vals)*10)/10-0.1):0,mx=Math.max(...vals);
+  if(opts.pct)mx=Math.min(1,Math.ceil(mx*10)/10);else mx=mx*1.08;
+  const ys=v=>Tp+(H-Tp-B)*(1-(v-mn)/(mx-mn||1));
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;overflow:visible" id="${opts.id}">`;
+  // delayed shade
+  if(i1>=36){const a=Math.max(36,i0);svg+=`<rect x="${xs(a)-(n>1?(W-L-R)/(n-1)/2:0)}" y="${Tp}" width="${W-R-(xs(a)-(n>1?(W-L-R)/(n-1)/2:0))}" height="${H-Tp-B}" fill="var(--bg2)"/>`;}
+  for(let g=0;g<=4;g++){const v=mn+(mx-mn)*g/4;const y=ys(v);svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L-6}" y="${y+4}" font-size="11" text-anchor="end" fill="var(--mute)">${opts.pct?(v*100).toFixed(0)+'%':fmt(v)}</text>`;}
+  const step=Math.ceil(n/8);for(let i=i0;i<=i1;i+=step)svg+=`<text x="${xs(i)}" y="${H-8}" font-size="11" text-anchor="middle" fill="var(--mute)">${dates[i]}</text>`;
+  if(opts.ann)ANN.forEach(a=>{if(a[0]>=i0&&a[0]<=i1)svg+=`<line x1="${xs(a[0])}" x2="${xs(a[0])}" y1="${Tp}" y2="${H-B}" stroke="var(--mute)" stroke-dasharray="3 3"/><text x="${xs(a[0])+4}" y="${Tp+10}" font-size="11" fill="var(--mute)">${a[1]}</text>`;});
+  seriesList.forEach(s=>{let d='';for(let i=i0;i<=i1;i++)d+=(i===i0?'M':'L')+xs(i).toFixed(1)+' '+ys(s.f(i)).toFixed(1)+' ';
+    if(opts.area)svg+=`<path d="${d}L${xs(i1)} ${H-B} L${xs(i0)} ${H-B}Z" fill="${s.c}" opacity=".12"/>`;
+    svg+=`<path d="${d}" fill="none" stroke="${s.c}" stroke-width="${s.w||2.5}" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const lv=s.f(i1);svg+=`<circle cx="${xs(i1)}" cy="${ys(lv)}" r="4" fill="${s.c}" stroke="var(--card)" stroke-width="2"/>`;
+    if(opts.endLabel)svg+=`<text x="${xs(i1)+9}" y="${ys(lv)+4}" font-size="12" font-weight="600" fill="${s.c}">${opts.pct?(lv*100).toFixed(1)+'%':fmt(lv)}</text>`;});
+  svg+=`<rect id="${opts.id}-hit" x="${L}" y="${Tp}" width="${W-L-R}" height="${H-Tp-B}" fill="transparent"/><line id="${opts.id}-cur" x1="0" x2="0" y1="${Tp}" y2="${H-B}" stroke="var(--ink)" stroke-width="1" style="display:none"/></svg>`;
+  el.innerHTML=svg+(el.id==='trend'?'<div class="tip" id="tip"></div>':'<div class="tip"></div>');
+  const sv=el.querySelector('svg'),hit=el.querySelector('#'+opts.id+'-hit'),cur=el.querySelector('#'+opts.id+'-cur'),tip=el.querySelector('.tip');
+  hit.onmousemove=e=>{const r=sv.getBoundingClientRect();const px=(e.clientX-r.left)/r.width*W;const i=i0+Math.round((px-L)/((W-L-R)/Math.max(1,n-1)));if(i<i0||i>i1)return;
+    cur.setAttribute('x1',xs(i));cur.setAttribute('x2',xs(i));cur.style.display='';
+    tip.style.display='block';tip.innerHTML=`<b>${dates[i]}</b><br>`+seriesList.map(s=>`<span style="color:${s.c==='var(--mute)'?'#ccc':s.c.replace('var(--acc)','#FF7A9A').replace('var(--blue)','#8FB0FF').replace('var(--ok)','#5FD6B0').replace('var(--amber)','#FFC24D')}">●</span> ${s.n} ${opts.pct?(s.f(i)*100).toFixed(1)+'%':fmt(s.f(i))}`).join('<br>');
+    const lx=(e.clientX-r.left),ly=(e.clientY-r.top);tip.style.left=(lx+14+180>r.width?lx-190:lx+14)+'px';tip.style.top=(ly-10)+'px';};
+  hit.onmouseleave=()=>{tip.style.display='none';cur.style.display='none';};
+}
+function drawTrend(){const m=METRICS[mi];lineChart($('#trend'),m.series.map(s=>({n:s[0],f:s[1],c:s[2]})),{id:'tr',pct:m.pct,ann:true,endLabel:true});
+  $('#trendLegend').innerHTML=m.series.map(s=>`<span><i style="background:${s[2]}"></i>${s[0]}</span>`).join('')+'';}
+function drawSend(){lineChart($('#sendTypes'),[{n:'AI Image',f:i=>S.sendImg[i],c:'var(--blue)'},{n:'AI Sticker',f:i=>S.sendSticker[i],c:'var(--acc)'}],{id:'sd',h:210,w:420,area:true});}
+// cats
+$('#cats').innerHTML=['img','noimg'].map(k=>{const c=CATS[k];const mx=Math.max(...c.rows.map(r=>r[2]));
+  return `<div class="cat"><div class="t">${c.t}</div><div class="row h"><div>创作类型</div><div>占比</div><div class="p">指令</div><div class="u">使用率</div></div>`+
+  c.rows.map(r=>`<div class="row"><div>${r[0]}</div><div class="bar"><i style="width:${100*r[2]/mx}%"></i></div><div class="p">${r[2]}%</div><div class="u ${r[3]>=70?'hi':r[3]<58?'lo':''}">${r[3].toFixed(0)}%</div></div>`).join('')+'</div>';}).join('');
+setRange(0,N-1,'all');
+})();
+</script>
+</body>
+</html>
