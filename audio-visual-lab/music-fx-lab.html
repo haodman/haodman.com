@@ -1914,6 +1914,15 @@ var GrooveEngine = (function () {
       var parts = [];
       var allOn = true;
       for (j = 0; j < N2; j++) if (Wd[j] <= eps) { allOn = false; break; }
+      // Preview fast path: avoid serializing and reparsing thousands of SVG coordinates.
+      // Keep the original SVG output for export/design clients and broken ribbons.
+      if (p.canvasPaths && allOn && !opts.layered && typeof Path2D !== 'undefined') {
+        var path = new Path2D();path.moveTo(ox[0],oy[0]);
+        for(j=1;j<N2;j++)path.lineTo(ox[j],oy[j]);path.closePath();
+        path.moveTo(ix[N2-1],iy[N2-1]);
+        for(j=N2-2;j>=0;j--)path.lineTo(ix[j],iy[j]);path.closePath();
+        rings.push({path:path,alpha:o.alpha});continue;
+      }
       if (allOn) {
         var s1 = ['M', f(ox[0]), f(oy[0])];
         for (j = 1; j < N2; j++) s1.push('L', f(ox[j]), f(oy[j]));
@@ -2052,7 +2061,7 @@ window.createGrooveLyricEffect=function({W,H,ctx,S,R,Sel,T,clamp,songTime,lyricA
     range('沟纹','discY','唱片上下位置 · 负值上移 %',-25,25,-5,1),
     range('纹理字','wMin','线条粗细',.2,1.5,.8,.05),range('纹理字','wMax','文字处粗细 % 沟距',25,92,50,1),range('纹理字','band','笔画覆盖',0,160,0,1),range('纹理字','taper','梭形收尖',0,25,10,.5),range('纹理字','cutLo','起粗阈值',0,45,10,1),range('纹理字','cutHi','饱满阈值',46,95,70,1),range('纹理字','sharpen','锐化',0,100,0,1),range('纹理字','follow','跟随笔画',0,100,65,1),
     select('纹理字','mapping','贴合方式',['贴在盘面','沿沟纹环绕'],'贴在盘面'),range('纹理字','textScale','文字大小',30,95,82,1),
-    select('小鼓包','bumps','小鼓包',['开','关'],'开'),range('小鼓包','bumpAmp','幅度',0,15,7,.5),range('小鼓包','bumpAmpRand','幅度随机 %',0,100,50,1),range('小鼓包','bumpW','宽度',2,25,9,1),range('小鼓包','bumpDensity','密度',0,2,1.5,.05),
+    select('曲线起伏','bumps','曲线起伏',['开','关'],'开'),range('曲线起伏','bumpW','宽度',2,25,25,1),range('曲线起伏','waveHeight','高度',0,40,30,.5),range('曲线起伏','bumpDensity','数量',0,4,.8,.1),
     select('呼吸线','breathOn','呼吸线',['开','关'],'开'),range('呼吸线','breathCount','线条数量',1,12,6,1),range('呼吸线','breathAlpha','透明度 %',5,100,42,1),range('呼吸线','breathRandom','随机参与数量',0,10,3,1),range('呼吸线','breathAmp','呼吸幅度 %',0,18,7,1),
     select('跳动音符','jumpOn','跳动音符',['开','关'],'开'),range('跳动音符','jumpCount','每拍最多',2,5,3,1),range('跳动音符','jumpSize','音符大小',10,34,20,1),range('跳动音符','jumpHeight','跳动高度',8,42,24,1),range('跳动音符','jumpRandom','随机大小 %',0,80,35,1),
     range('唱针','armShake','节奏微颤',0,2,1,.05),range('唱针','armLight','盘面划光',0,2,1,.05),
@@ -2202,7 +2211,7 @@ window.createGrooveLyricEffect=function({W,H,ctx,S,R,Sel,T,clamp,songTime,lyricA
     if(state.worker)return true;if(state.workerFailed||typeof Worker==='undefined'||typeof OffscreenCanvas==='undefined')return false;
     try{
       const engine=Array.from(document.scripts).find(s=>s.textContent.includes('var GrooveEngine = (function () {'))?.textContent;if(!engine)throw new Error('Groove engine source unavailable');
-      const workerCode=engine+`\nlet grooveMask=null;self.onmessage=e=>{const m=e.data;try{if(m.mask)grooveMask=m.mask;const started=performance.now(),res=GrooveEngine.build(m.q,grooveMask),canvas=new OffscreenCanvas(m.side,m.side),g=canvas.getContext('2d',{alpha:true});g.translate(m.side*.5-res.cx,m.side*.5-res.cy);g.fillStyle=m.col;for(const ring of res.rings){g.globalAlpha=ring.alpha*.85;g.fill(new Path2D(ring.d),'evenodd');}g.globalAlpha=1;const bumps=(res.bumps||[]).map(b=>({id:b.id,x:b.x,y:b.y,alpha:b.alpha,amp:b.amp})),bitmap=canvas.transferToImageBitmap();self.postMessage({id:m.id,key:m.key,spin:m.spin,side:m.side,buildMs:performance.now()-started,bumps,bitmap},[bitmap]);}catch(error){self.postMessage({id:m.id,error:String(error&&error.message||error)});}};`;
+      const workerCode=engine+`\nlet grooveMask=null;self.onmessage=e=>{const m=e.data;try{if(m.mask)grooveMask=m.mask;const started=performance.now(),res=GrooveEngine.build(m.q,grooveMask),canvas=new OffscreenCanvas(m.side,m.side),g=canvas.getContext('2d',{alpha:true});g.translate(m.side*.5-res.cx,m.side*.5-res.cy);g.fillStyle=m.col;for(const ring of res.rings){g.globalAlpha=ring.alpha*.85;g.fill(ring.path||new Path2D(ring.d),'evenodd');}g.globalAlpha=1;const bumps=(res.bumps||[]).map(b=>({id:b.id,x:b.x,y:b.y,alpha:b.alpha,amp:b.amp})),bitmap=canvas.transferToImageBitmap();self.postMessage({id:m.id,key:m.key,spin:m.spin,side:m.side,buildMs:performance.now()-started,bumps,bitmap},[bitmap]);}catch(error){self.postMessage({id:m.id,error:String(error&&error.message||error)});}};`;
       const url=URL.createObjectURL(new Blob([workerCode],{type:'text/javascript'}));state.worker=new Worker(url);URL.revokeObjectURL(url);
       state.worker.onmessage=e=>{const m=e.data;state.buildPending=false;if(m.error){console.warn('Groove worker fallback:',m.error);state.worker.terminate();state.worker=null;state.workerFailed=true;return;}if(m.key!==state.desiredKey){m.bitmap?.close?.();return;}state.surface?.close?.();state.surface=m.bitmap;state.bumpAnchors=m.bumps||[];state.surfaceSide=m.side;state.surfaceSpin=m.spin;state.cacheKey=m.key;state.buildMs=m.buildMs;state.builtAt=performance.now()/1000;};
       state.worker.onerror=()=>{state.buildPending=false;state.worker?.terminate();state.worker=null;state.workerFailed=true;};return true;
@@ -2212,7 +2221,7 @@ window.createGrooveLyricEffect=function({W,H,ctx,S,R,Sel,T,clamp,songTime,lyricA
     const started=performance.now(),res=GrooveEngine.build({...q,quality:11},mask);state.buildMs=performance.now()-started;
     if(!state.surface||state.surfaceSide!==side||typeof state.surface.getContext!=='function'){state.surface?.close?.();state.surface=document.createElement('canvas');state.surface.width=state.surface.height=side;state.surfaceCtx=state.surface.getContext('2d',{alpha:true});state.surfaceSide=side;}
     const g=state.surfaceCtx;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,side,side);g.translate(side*.5-res.cx,side*.5-res.cy);g.fillStyle=col;
-    for(const ring of res.rings){g.globalAlpha=ring.alpha*.85;g.fill(new Path2D(ring.d),'evenodd');}g.globalAlpha=1;state.bumpAnchors=(res.bumps||[]).map(b=>({id:b.id,x:b.x,y:b.y,alpha:b.alpha,amp:b.amp}));state.surfaceSpin=state.spin;state.cacheKey=key;state.builtAt=t;
+    for(const ring of res.rings){g.globalAlpha=ring.alpha*.85;g.fill(ring.path||new Path2D(ring.d),'evenodd');}g.globalAlpha=1;state.bumpAnchors=(res.bumps||[]).map(b=>({id:b.id,x:b.x,y:b.y,alpha:b.alpha,amp:b.amp}));state.surfaceSpin=state.spin;state.cacheKey=key;state.builtAt=t;
   }
   function armAngle(at,p){
     const u=clamp(at/1.15,0,1),settle=1-Math.pow(1-u,3);
@@ -2344,10 +2353,11 @@ window.createGrooveLyricEffect=function({W,H,ctx,S,R,Sel,T,clamp,songTime,lyricA
       ctx.fillStyle='#050406';ctx.fillRect(0,0,W,H);
       const grad=ctx.createLinearGradient(0,H*.12,0,H);grad.addColorStop(0,`hsla(${h},88%,30%,0)`);grad.addColorStop(.3,`hsla(${h},88%,32%,.08)`);grad.addColorStop(.58,`hsla(${h},92%,38%,.28)`);grad.addColorStop(.8,`hsla(${h},95%,43%,.53)`);grad.addColorStop(1,`hsla(${h},96%,47%,${.72+state.pulse*.04*p.glowReact})`);ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
       drawNotes(0,h,p);
-      const key=JSON.stringify([text,p,h]),sinceBuild=t-(state.builtAt||0),rebuild=key!==state.cacheKey||!state.surface||(S.playing&&sinceBuild>.18);state.desiredKey=key;
+      const key=JSON.stringify([text,p,h]),sinceBuild=t-(state.builtAt||0),rebuild=key!==state.cacheKey||!state.surface||(S.playing&&sinceBuild>1/30);state.desiredKey=key;
       if(rebuild){
-        const q={...GrooveEngine.DEFAULTS,...p,radius:W*.82,tracks:1,trackGap:0,spin:state.spin,textY:0,textAngle:0,mapping:p.mapping==='沿沟纹环绕'?'arc':'disc',quality:7,soft:1.5,wobble:.2,bumpOn:p.bumps==='开',bumpAmp:p.bumpAmp,baseBumpEnvelope:state.pulse*p.bumpReact,
-          beatPulses:state.pulses.map(e=>({...e,angle:e.angle+state.spin*Math.PI/180,strength:e.gain*p.bumpReact*Math.sin(Math.PI*clamp(e.age/.12,0,1)/2)*Math.exp(-e.age*4.5)})),symOn:false};
+        const release=.4;
+        const q={...GrooveEngine.DEFAULTS,...p,radius:W*.82,tracks:1,trackGap:0,spin:state.spin,textY:0,textAngle:0,mapping:p.mapping==='沿沟纹环绕'?'arc':'disc',quality:7,canvasPaths:true,soft:1.5,wobble:.2,bumpOn:p.bumps==='开',bumpAmp:clamp(p.waveHeight??30,0,40),bumpAmpRand:50,baseBumpEnvelope:state.pulse*p.bumpReact,
+          beatPulses:state.pulses.map(e=>({...e,angle:e.angle+state.spin*Math.PI/180,strength:e.gain*p.bumpReact*Math.sin(Math.PI*clamp(e.age/.12,0,1)/2)*Math.exp(-e.age/release)})),symOn:false};
         const mask=maskFor(text,p),side=Math.ceil(W*2.15);
         if(ensureSurfaceWorker()){
           if(!state.buildPending){const maskPayload=state.workerMaskKey===state.maskKey?null:{w:mask.w,h:mask.h,data:mask.data,contentW:mask.contentW,contentH:mask.contentH};state.workerMaskKey=state.maskKey;state.buildPending=true;state.worker.postMessage({id:++state.buildId,key,spin:state.spin,side,col,q,mask:maskPayload});}
