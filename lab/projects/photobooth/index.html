@@ -126,14 +126,14 @@ body[data-lang="en"] .category-emoji{padding-top:1px}
 .grid .examples-row .lab{line-height:18px}
 </style>
 </head>
-<body data-lang="both">
+<body data-lang="en">
 <div class="wrap">
   <div class="top">
     <div>
       <h1 id="h1"></h1>
       <div class="sub"><span id="sub"></span><span class="i">i<span class="tip" id="tip"></span></span></div>
     </div>
-    <div class="language-switch" role="group" aria-label="Language"><button type="button" data-language="zh" aria-pressed="true">中文</button><button type="button" data-language="en" aria-pressed="false">English</button><button type="button" data-language="both" aria-pressed="false">中英</button></div>
+    <div class="language-switch" role="group" aria-label="Language"><button type="button" data-language="zh" aria-pressed="false">中文</button><button type="button" data-language="en" aria-pressed="true">English</button><button type="button" data-language="both" aria-pressed="false">中英</button></div>
   </div>
   <div class="table-scroll" tabindex="0" aria-label="Design rationale"><div class="grid" id="grid"></div></div>
 </div>
@@ -166,7 +166,7 @@ const M=[
   ex:[{zh:'动物合拍',en:'Animal duo'},{zh:'表情包复刻',en:'Meme recreation'},{zh:'恶搞好友',en:'Roast a friend'},{zh:'夸张肢体',en:'Exaggerated poses'}]}
 ];
 // ---------- render ----------
-let L='zh';
+let L='en';
 const t=(o)=>L==='both'?`${o.zh}<span class="sec2">${o.en}</span>`:o[L];
 const tl=(o)=>L==='both'?`${o.zh}<span class="sec2" style="font-size:11px">${o.en}</span>`:o[L];
 const chip=(o)=>o.zh===o.en?o.zh:(L==='both'?`<b>${o.zh}</b><em>${o.en}</em>`:o[L]);
