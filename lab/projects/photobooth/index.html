@@ -109,7 +109,11 @@ body[data-lang="en"] .category-emoji{padding-top:0}
 .grid .chips>span,body[data-lang="both"] .grid .chips>span{line-height:18px}
 .grid li:before{top:10px}
 /* Compact presentation for embedded document views. */
-.wrap{zoom:.9}
+/* Fixed presentation canvas scales to the available viewport. */
+.wrap,body[data-lang="both"] .wrap,body[data-lang="zh"] .wrap,body[data-lang="en"] .wrap{width:1240px;max-width:none;padding:36px 24px;zoom:var(--presentation-scale,1)}
+.top{flex-direction:row;gap:24px}
+h1{font-size:28px}
+html,body{overflow-x:hidden}
 </style>
 </head>
 <body data-lang="both">
@@ -156,6 +160,9 @@ let L='zh';
 const t=(o)=>L==='both'?`${o.zh}<span class="sec2">${o.en}</span>`:o[L];
 const tl=(o)=>L==='both'?`${o.zh}<span class="sec2" style="font-size:11px">${o.en}</span>`:o[L];
 const chip=(o)=>o.zh===o.en?o.zh:(L==='both'?`<b>${o.zh}</b><em>${o.en}</em>`:o[L]);
+function fitPresentation(){document.documentElement.style.setProperty("--presentation-scale",Math.min(1,document.documentElement.clientWidth/1240));}
+fitPresentation();
+addEventListener("resize",fitPresentation);
 function render(){
   document.documentElement.lang=L==='en'?'en':'zh-CN';
   document.body.dataset.lang=L;
@@ -173,10 +180,11 @@ function render(){
   requestAnimationFrame(alignRows);
 }
 function alignRows(){
+ const scale=Math.min(1,document.documentElement.clientWidth/1240);
  const groups=['.category-title','.h .name .sec2','ul li','.chips > span'];
  groups.forEach(selector=>document.querySelectorAll('#grid '+selector).forEach(e=>e.style.minHeight=''));
- ['.category-title','.h .name .sec2'].forEach(selector=>{const items=[...document.querySelectorAll('#grid '+selector)];const height=Math.max(0,...items.map(e=>e.getBoundingClientRect().height));items.forEach(e=>e.style.minHeight=height+'px')});
- ['ul','.chips'].forEach(selector=>{const lists=[...document.querySelectorAll('#grid '+selector)];const count=Math.max(0,...lists.map(e=>e.children.length));for(let i=0;i<count;i++){const items=lists.map(e=>e.children[i]).filter(Boolean);const height=Math.max(0,...items.map(e=>e.getBoundingClientRect().height));items.forEach(e=>e.style.minHeight=height+'px')}});
+ ['.category-title','.h .name .sec2'].forEach(selector=>{const items=[...document.querySelectorAll('#grid '+selector)];const height=Math.max(0,...items.map(e=>e.getBoundingClientRect().height));items.forEach(e=>e.style.minHeight=(height/scale)+'px')});
+ ['ul','.chips'].forEach(selector=>{const lists=[...document.querySelectorAll('#grid '+selector)];const count=Math.max(0,...lists.map(e=>e.children.length));for(let i=0;i<count;i++){const items=lists.map(e=>e.children[i]).filter(Boolean);const height=Math.max(0,...items.map(e=>e.getBoundingClientRect().height));items.forEach(e=>e.style.minHeight=(height/scale)+'px')}});
 }
 addEventListener('resize',()=>requestAnimationFrame(alignRows));
 document.fonts.ready.then(alignRows);
