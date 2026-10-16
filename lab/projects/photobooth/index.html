@@ -60,7 +60,7 @@ body[data-lang="both"] .lead .sec2{line-height:1.4;margin-top:3px}
 // ---------- copy ----------
 const T={
  h1:{zh:'好友合拍设计思路',en:'Friend Co-Photo Design Rationale'},
- sub:{zh:'从真实动机出发：用户想发什么 → 想表达什么 → 画面应该呈现什么',en:'Start from real motivation: what users want to post → what they want to express → what the image should show'},
+ sub:{zh:'从真实动机出发：用户想发什么 → 想表达什么 → 画面应该呈现什么',en:'Start with real motivations: what users want to post → what they want to express → what the image should convey'},
  tip:{zh:'<b>人不在一块儿，也能合拍。</b><br>异地的、网上认识的、还没合过照的朋友，都能有张合照。这是真人相机做不到的。',
       en:'<b>You don’t have to be in the same room to take a photo together.</b><br>Long-distance friends, friends you met online, friends you’ve never been photographed with — everyone gets a photo together. A real camera can’t do that.'},
  rows:{why:{zh:'用户诉求',en:'User need'},lead:{zh:'画面重点',en:'Visual focus'},show:{zh:'怎么拍',en:'How it’s shot'},ex:{zh:'效果示例',en:'Effect examples'}}
@@ -91,7 +91,7 @@ function render(){
   document.documentElement.lang=L==='en'?'en':'zh-CN';
   document.body.dataset.lang=L;
   document.getElementById('h1').innerHTML=L==='both'?`${T.h1.zh}<span class="sec2" style="font-size:15px;margin-top:2px">${T.h1.en}</span>`:T.h1[L];
-  document.getElementById('sub').innerHTML=L==='both'?T.sub.zh:T.sub[L];
+  document.getElementById('sub').innerHTML=t(T.sub);
   document.getElementById('tip').innerHTML=L==='both'?T.tip.zh+'<br><br>'+T.tip.en:T.tip[L];
   const rows=[
    ['',m=>`<div class="name"><i style="background:${m.c}"></i>${m.n[L==='both'?'zh':L]}${L==='both'?`<span class="sec2">${m.n.en}</span>`:''}</div>`,'h'],
