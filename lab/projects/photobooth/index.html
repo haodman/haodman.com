@@ -3,72 +3,105 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Photobooth 好友合拍 · 设计思路</title>
+<title>Photobooth 好友合拍 · 设计思路 / Friend Co-Photo Design Rationale</title>
 <style>
 :root{--bg:#F5F5F7;--card:#FFFFFF;--ink:#1D1D1F;--ink2:#424245;--mute:#86868B;--sep:rgba(0,0,0,.08);--fill:rgba(0,0,0,.045);
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--card:#1C1C1E;--ink:#F5F5F7;--ink2:#D2D2D7;--sep:rgba(255,255,255,.1);--fill:rgba(255,255,255,.07);color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#000;--card:#1C1C1E;--ink:#F5F5F7;--ink2:#D2D2D7;--sep:rgba(255,255,255,.1);--fill:rgba(255,255,255,.07)}
 *{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 .wrap{width:960px;margin:0 auto;padding:24px 24px 24px}
-.eyebrow{font-size:12px;font-weight:600;color:var(--mute)}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 h1{font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.15;margin:0 0 6px}
 .sub{font-size:14px;color:var(--ink2);margin:0 0 22px;display:flex;align-items:center;gap:6px}
 .i{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;border:1.3px solid var(--mute);color:var(--mute);font:600 9.5px/1 -apple-system,sans-serif;font-style:normal;cursor:default;position:relative;flex:none}
 .i:hover{border-color:var(--ink);color:var(--ink)}
-.i .tip{display:none;position:absolute;top:22px;left:-8px;width:260px;background:var(--card);color:var(--ink2);font:400 12.5px/1.55 -apple-system,"PingFang SC",sans-serif;padding:12px 14px;border-radius:12px;box-shadow:0 10px 36px rgba(0,0,0,.15),0 0 0 .5px var(--sep);z-index:20}
-.i:hover .tip{display:block}.i.r .tip{left:auto;right:-8px}
-.grid{background:var(--card);border-radius:18px;display:grid;grid-template-columns:84px repeat(5,minmax(0,1fr))}
+.i .tip{display:none;position:absolute;top:22px;left:-8px;width:280px;background:var(--card);color:var(--ink2);font:400 12.5px/1.55 -apple-system,"PingFang SC","Helvetica Neue",sans-serif;padding:12px 14px;border-radius:12px;box-shadow:0 10px 36px rgba(0,0,0,.15),0 0 0 .5px var(--sep);z-index:20}
+.i:hover .tip{display:block}
+.grid{background:var(--card);border-radius:18px;display:grid;grid-template-columns:96px repeat(5,minmax(0,1fr))}
 .grid>div{padding:12px 14px;border-top:.5px solid var(--sep)}
 .grid>.h{border-top:0;padding-top:16px;padding-bottom:12px}
 .lab{font-size:12px;font-weight:600;color:var(--mute)}
-.name{display:flex;align-items:center;gap:7px;font-size:16px;font-weight:700;letter-spacing:-.01em}
+.name{display:flex;align-items:center;gap:7px;font-size:16px;font-weight:700;letter-spacing:-.01em;flex-wrap:wrap}
 .name i{width:8px;height:8px;border-radius:50%;flex:none}
-.say{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13.5px;font-weight:600;color:var(--ink);font-family:-apple-system,"SF Pro Text","Helvetica Neue",sans-serif}
-.txt{color:var(--ink2)}
 .lead{font-weight:600}
+.sec2{display:block;font-size:11.5px;font-weight:500;color:var(--mute);margin-top:1px;letter-spacing:0}
+.name .sec2{width:100%;padding-left:15px;margin-top:-2px}
 ul{margin:0;padding:0;list-style:none}
 li{position:relative;padding-left:11px;color:var(--ink2);margin-bottom:3px}
 li:before{content:'';position:absolute;left:0;top:8px;width:4px;height:4px;border-radius:50%;background:var(--mute)}
 .chips{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.chips span{font-size:11.5px;padding:3px 0;border-radius:999px;background:var(--fill);color:var(--ink2);white-space:nowrap;text-align:center;overflow:hidden;text-overflow:ellipsis}
-.en{font-size:12px;color:var(--mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rules{background:var(--card);border-radius:18px;display:grid;grid-template-columns:repeat(4,1fr);margin-top:14px}
-.rule{padding:14px 16px;border-left:.5px solid var(--sep)}
-.rule:first-child{border-left:0}
-.rule .n{font-size:11px;font-weight:600;color:var(--mute)}
-.rule .h{font-size:13.5px;font-weight:600;margin:2px 0 3px}
-.rule .d{font-size:12px;color:var(--mute);line-height:1.45}
-.sec{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--mute);margin:22px 0 0 2px}
+.chips span{font-size:11.5px;padding:3px 6px;border-radius:999px;background:var(--fill);color:var(--ink2);white-space:nowrap;text-align:center;overflow:hidden;text-overflow:ellipsis}
+body[data-lang="both"] .chips{grid-template-columns:1fr}
+body[data-lang="both"] .chips span{text-align:left;line-height:1.3;padding:4px 9px}
+body[data-lang="both"] .chips span b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body[data-lang="both"] .chips span em{display:block;font-style:normal;color:var(--mute);font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body[data-lang="both"] .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body[data-lang="both"] .wrap{width:1240px}
+body[data-lang="both"] .grid{grid-template-columns:110px repeat(5,minmax(0,1fr))}
+body[data-lang="both"] .lead .sec2{line-height:1.4;margin-top:3px}
 </style>
 </head>
-<body>
+<body data-lang="both">
 <div class="wrap">
-  
-  <h1>好友合拍设计思路</h1>
-  <div class="sub">从真实动机出发：用户想发什么 → 想表达什么 → 画面应该呈现什么<span class="i">i<span class="tip"><b>人不在一块儿，也能合拍。</b><br>异地的、网上认识的、还没合过照的朋友，都能有张合照。这是真人相机做不到的。</span></span></div>
-
+  <div class="top">
+    <div>
+      <h1 id="h1"></h1>
+      <div class="sub"><span id="sub"></span><span class="i">i<span class="tip" id="tip"></span></span></div>
+    </div>
+  </div>
   <div class="grid" id="grid"></div>
 </div>
 <script>
+// ---------- copy ----------
+const T={
+ h1:{zh:'好友合拍设计思路',en:'Friend Co-Photo Design Rationale'},
+ sub:{zh:'从真实动机出发：用户想发什么 → 想表达什么 → 画面应该呈现什么',en:'Start from real motivation: what users want to post → what they want to express → what the image should show'},
+ tip:{zh:'<b>人不在一块儿，也能合拍。</b><br>异地的、网上认识的、还没合过照的朋友，都能有张合照。这是真人相机做不到的。',
+      en:'<b>You don’t have to be in the same room to take a photo together.</b><br>Long-distance friends, friends you met online, friends you’ve never been photographed with — everyone gets a photo together. A real camera can’t do that.'},
+ rows:{why:{zh:'用户诉求',en:'User need'},lead:{zh:'画面重点',en:'Visual focus'},show:{zh:'怎么拍',en:'How it’s shot'},ex:{zh:'效果示例',en:'Effect examples'}}
+};
 const M=[
- {n:'晒关系',c:'#FF2D55',say:'this is us fr 🫶',en:'这就是我们俩',lead:'亲密互动',why:'想和好朋友有张亲密合照',show:['亲密动作','四格 / 分屏'],ex:['人生四格','分屏互动','异地同框','双人比心']},
- {n:'晒风格',c:'#AF52DE',say:'we ate this 💅',en:'我俩今天穿得也太好看了',lead:'两人的穿搭',why:'想秀一下我俩的穿搭',show:['全身穿搭','同款 / 配套'],ex:['OOTD','Y2K','闺蜜装','杂志封面']},
- {n:'晒生活',c:'#007AFF',say:'LA sunsets soon? 🌅',en:'真想去洛杉矶看日落飞车',lead:'一起做的事',why:'想记下一起去过、或想去的地方',show:['地点场景','随手抓拍'],ex:['逛街','咖啡店','音乐节','过圣诞']},
- {n:'晒状态',c:'#FF9500',say:'me and you rn 💀',en:'我俩现在这德行',lead:'当下的心情',why:'想晒晒我俩现在的状态',show:['同款表情','大头 + 大字'],ex:['一起累瘫','开心','无语','emo']},
- {n:'玩梗整活',c:'#34C759',say:'it\'s giving… you 😭',en:'这不就是你吗哈哈哈',lead:'笑点、反差',why:'想逗 TA 笑，顺便整一下 TA',show:['夸张变形','热梗名场面'],ex:['动物合拍','表情包复刻','恶搞好友','夸张肢体']}
+ {c:'#FF2D55',n:{zh:'晒关系',en:'Show the bond'},lead:{zh:'亲密互动',en:'Close interaction'},why:{zh:'想和好朋友有张亲密合照',en:'Want a close, affectionate photo with my best friend'},
+  show:[{zh:'亲密动作',en:'Affectionate poses'},{zh:'四格 / 分屏',en:'4-grid / split screen'}],
+  ex:[{zh:'人生四格',en:'Photobooth strip'},{zh:'分屏互动',en:'Split-screen duo'},{zh:'异地同框',en:'Long-distance'},{zh:'双人比心',en:'Finger hearts'}]},
+ {c:'#AF52DE',n:{zh:'晒风格',en:'Show the style'},lead:{zh:'两人的穿搭',en:'Our outfits'},why:{zh:'想秀一下我俩的穿搭',en:'Want to show off how good we both look'},
+  show:[{zh:'全身穿搭',en:'Full-body fits'},{zh:'同款 / 配套',en:'Matching / coordinated'}],
+  ex:[{zh:'OOTD',en:'OOTD'},{zh:'Y2K',en:'Y2K'},{zh:'闺蜜装',en:'Twinning fits'},{zh:'杂志封面',en:'Magazine cover'}]},
+ {c:'#007AFF',n:{zh:'晒生活',en:'Show the life'},lead:{zh:'一起做的事',en:'Things we do together'},why:{zh:'想记下一起去过、或想去的地方',en:'Want to capture places we’ve been — or want to go'},
+  show:[{zh:'地点场景',en:'Place & scene'},{zh:'随手抓拍',en:'Candid snaps'}],
+  ex:[{zh:'逛街',en:'Shopping'},{zh:'咖啡店',en:'Coffee shop'},{zh:'音乐节',en:'Music festival'},{zh:'过圣诞',en:'Christmas'}]},
+ {c:'#FF9500',n:{zh:'晒情绪',en:'Show the struggle'},lead:{zh:'当下的情绪',en:'How we feel right now'},why:{zh:'想晒晒我们此刻的情绪',en:'Want to show how we’re feeling right now'},
+  show:[{zh:'情绪放大',en:'Amplified emotion'},{zh:'两人同款表情',en:'Matching expressions'}],
+  ex:[{zh:'一起累瘫',en:'Dead tired'},{zh:'无语',en:'Speechless'},{zh:'哭 / 破防',en:'Crying / broke down'},{zh:'发疯',en:'Going feral'}]},
+ {c:'#34C759',n:{zh:'玩梗整活',en:'Memes & chaos'},lead:{zh:'笑点、反差',en:'Jokes & contrast'},why:{zh:'想逗 TA 笑，顺便整一下 TA',en:'Want to make them laugh — and roast them a little'},
+  show:[{zh:'夸张变形',en:'Exaggerated transforms'},{zh:'热梗名场面',en:'Viral meme moments'}],
+  ex:[{zh:'动物合拍',en:'Animal duo'},{zh:'表情包复刻',en:'Meme recreation'},{zh:'恶搞好友',en:'Roast a friend'},{zh:'夸张肢体',en:'Exaggerated poses'}]}
 ];
-const rows=[
- ['',m=>`<div class="name"><i style="background:${m.c}"></i>${m.n}</div>`,'h'],
- ['为什么拍',m=>`<div class="txt">${m.why}</div>`],
- ['配文',m=>`<div class="say">${m.say}</div><div class="en">${m.en}</div>`],
- ['画面重点',m=>`<div class="lead">${m.lead}</div>`],
- ['怎么拍',m=>`<ul>${m.show.map(x=>`<li>${x}</li>`).join('')}</ul>`],
- ['效果示例',m=>`<div class="chips">${m.ex.map(x=>`<span>${x}</span>`).join('')}</div>`]
-];
-document.getElementById('grid').innerHTML=rows.map(r=>`<div class="${r[2]||''}"><div class="lab">${r[0]}</div></div>`+M.map(m=>`<div class="${r[2]||''}">${r[1](m)}</div>`).join('')).join('');
-(function(){const W=960;function fit(){document.body.style.zoom=Math.min(1.3,document.documentElement.clientWidth/W);}fit();addEventListener('resize',fit);})();
+// ---------- render ----------
+let L='both';
+const t=(o)=>L==='both'?`${o.zh}<span class="sec2">${o.en}</span>`:o[L];
+const tl=(o)=>L==='both'?`${o.zh}<span class="sec2" style="font-size:11px">${o.en}</span>`:o[L];
+const chip=(o)=>o.zh===o.en?o.zh:(L==='both'?`<b>${o.zh}</b><em>${o.en}</em>`:o[L]);
+function render(){
+  document.documentElement.lang=L==='en'?'en':'zh-CN';
+  document.body.dataset.lang=L;
+  document.getElementById('h1').innerHTML=L==='both'?`${T.h1.zh}<span class="sec2" style="font-size:15px;margin-top:2px">${T.h1.en}</span>`:T.h1[L];
+  document.getElementById('sub').innerHTML=L==='both'?T.sub.zh:T.sub[L];
+  document.getElementById('tip').innerHTML=L==='both'?T.tip.zh+'<br><br>'+T.tip.en:T.tip[L];
+  const rows=[
+   ['',m=>`<div class="name"><i style="background:${m.c}"></i>${m.n[L==='both'?'zh':L]}${L==='both'?`<span class="sec2">${m.n.en}</span>`:''}</div>`,'h'],
+   [tl(T.rows.why),m=>`<div class="lead" style="font-weight:500">${t(m.why)}</div>`],
+   [tl(T.rows.lead),m=>`<div class="lead">${t(m.lead)}</div>`],
+   [tl(T.rows.show),m=>`<ul>${m.show.map(x=>`<li>${t(x)}</li>`).join('')}</ul>`],
+   [tl(T.rows.ex),m=>`<div class="chips">${m.ex.map(x=>`<span>${chip(x)}</span>`).join('')}</div>`]
+  ];
+  document.getElementById('grid').innerHTML=rows.map(r=>`<div class="${r[2]||''}"><div class="lab">${r[0]}</div></div>`+M.map(m=>`<div class="${r[2]||''}">${r[1](m)}</div>`).join('')).join('');
+}
+render();
+function fit(){const W=1240;document.body.style.zoom=Math.min(1.3,document.documentElement.clientWidth/W);}fit();addEventListener('resize',fit);
 </script>
 </body>
 </html>
